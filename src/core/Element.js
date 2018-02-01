@@ -4,7 +4,7 @@ export default class Pixel8Element {
     x: 0,
     y: 0,
   }
-  constructor(props, children, root) {
+  constructor(props, children, ctx) {
     this.id = ID++
     this.props = this.mapProps(null, {
       ...this.constructor.defaultProps,
@@ -12,7 +12,7 @@ export default class Pixel8Element {
     })
     this.state = {}
     this.children = new Set(children)
-    this.root = root
+    this.ctx = ctx
     this.init()
   }
   setProps(nextProps) {
@@ -42,10 +42,10 @@ export default class Pixel8Element {
   }
   appendChild(child) {
     this.children.add(child)
-    this.root.registerChild(child)
+    this.ctx.registerChild(child)
   }
   removeChild(child) {
     this.children.delete(child)
-    this.root.unregisterChild(child)
+    this.ctx.unregisterChild(child)
   }
 }

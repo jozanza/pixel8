@@ -1,4 +1,4 @@
-import Pixel8Element from './Pixel8Element'
+import Pixel8Element from './Element'
 import { drawRect, toUint32 } from '../utils'
 
 export default class Rectangle extends Pixel8Element {
@@ -13,8 +13,7 @@ export default class Rectangle extends Pixel8Element {
   draw(f = x => x) {
     this.computedProps = f(this.props)
     const { x, y, width, height, fill, borderRadius } = this.computedProps
-    const { pixels, hitmap, imageData } = this.root
-    drawRect({
+    drawRect(this.ctx, {
       id: this.id,
       x: Math.round(x),
       y: Math.round(y),
@@ -22,9 +21,6 @@ export default class Rectangle extends Pixel8Element {
       h: Math.round(height),
       fill: toUint32(fill),
       radius: Math.round(borderRadius),
-      pixels,
-      hitmap,
-      imageData,
     })
     for (const child of this.children) {
       child.draw(x => this.mapChildProps(f(x)))

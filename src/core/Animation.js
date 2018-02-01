@@ -1,4 +1,4 @@
-import Pixel8Element from './Pixel8Element'
+import Pixel8Element from './Element'
 import * as easing from '../easing'
 
 export default class Animation extends Pixel8Element {

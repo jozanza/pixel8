@@ -2,9 +2,10 @@ import React, { Component } from 'react'
 import PropTypes from 'prop-types'
 import styled from 'styled-components'
 import AutoScale from 'react-auto-scale'
+import Pixel8Context from '../core/Context'
 import createRenderer from '../renderer'
 import createElement from '../createElement'
-import { clickToCoords } from '../utils'
+import { clickToCoords, requestInterval, clearTimer } from '../utils'
 const { render, unmount } = createRenderer(createElement)
 
 const StageBackground = styled.div`
@@ -110,75 +111,42 @@ export default class Stage extends Component {
     onClick: () => {},
   }
   tick = 0
-  children = new Set()
-  childMap = new Map()
-  appendChild = child => {
-    this.children.add(child)
-    this.registerChild(child)
-  }
-  removeChild = child => {
-    this.children.delete(child)
-    this.unregisterChild(child)
-  }
-  registerChild = child => {
-    this.childMap.set(child.id, child)
-  }
-  unregisterChild = child => {
-    this.childMap.delete(child.id)
-  }
+  pixel8 = new Pixel8Context({
+    width: this.props.width,
+    height: this.props.height,
+  })
+  appendChild = this.pixel8.appendChild
+  removeChild = this.pixel8.removeChild
   init() {
-    const { width, height } = this.props
-    const size = width * height * 4
     this.ctx = this.canvas.getContext('2d')
     this.ctx.globalAlpha = 0
-    // visible pixels
-    this.pixelBuf = new ArrayBuffer(size)
-    this.pixels = new Uint32Array(this.pixelBuf)
-    // collision pixels
-    this.hitBuf = new ArrayBuffer(size)
-    this.hitmap = new Uint32Array(this.hitBuf)
-    // create ImageData
-    this.imageData = new ImageData(
-      new Uint8ClampedArray(this.pixelBuf),
-      width,
-      height,
-    )
     // draw + update loop
     this.timer = requestInterval(() => {
       this.props.onTick(this)
       this.tick++
-      this.draw()
+      this.pixel8
+        .clear()
+        .draw()
+        .paint(this.ctx)
+      this.props.onDraw(this)
     }, 1 / this.props.fps * 1000)
     // onInit() callback
     this.props.onInit(this)
   }
-  // utils methods
-  getPixel = (x, y) => this.pixels[y * this.props.width + x]
-  getChild = (x, y) => this.childMap.get(this.hitmap[y * this.props.width + x])
   componentDidMount() {
     this.init()
     render(this)
-    this.draw()
+    this.pixel8
+      .clear()
+      .draw()
+      .paint(this.ctx)
   }
   componentWillUnmount() {
-    cancelInterval(this.timer)
+    clearTimer(this.timer)
     unmount(this)
   }
   componentDidUpdate() {
     render(this)
-  }
-  draw() {
-    // clear pixels and hitmap
-    for (let i = 0; i < this.pixels.length; i++) {
-      this.pixels[i] = this.hitmap[i] = 0
-    }
-    // update pixels
-    for (const child of this.children) {
-      child.draw()
-    }
-    // draw pixels to the canvas
-    this.ctx.putImageData(this.imageData, 0, 0)
-    this.props.onDraw(this)
   }
   render() {
     const {
@@ -208,11 +176,7 @@ export default class Stage extends Component {
           display: 'inline-block',
         }}
       >
-        <AutoScale
-          maxWidth={maxWidth}
-          maxHeight={maxHeight}
-          maxScale={1}
-        >
+        <AutoScale maxWidth={maxWidth} maxHeight={maxHeight} maxScale={1}>
           <div
             style={{
               position: 'relative',
@@ -244,7 +208,7 @@ export default class Stage extends Component {
                 e.persist()
                 onClick(e)
                 const { x, y } = clickToCoords(e, scale, maxWidth, maxHeight)
-                const child = this.getChild(x, y)
+                const child = this.pixel8.getChild(x, y)
                 if (child && child.props.onClick) {
                   child.props.onClick(e)
                 }
@@ -257,28 +221,3 @@ export default class Stage extends Component {
     )
   }
 }
-
-export const requestInterval = (cb, ms) => {
-  const self = {}
-  let start = performance.now()
-  const updateCancel = x => {
-    cancelInterval.intervals.set(self, x)
-  }
-  const next = () => {
-    if (performance.now() - start >= ms) {
-      start += ms
-      cb()
-    }
-    updateCancel(requestAnimationFrame(next))
-  }
-  updateCancel(requestAnimationFrame(next))
-  return self
-}
-export const cancelInterval = (() => {
-  const cancelInterval = self => {
-    const x = cancelInterval.intervals.get(self)
-    cancelAnimationFrame(x)
-  }
-  cancelInterval.intervals = new WeakMap()
-  return cancelInterval
-})()

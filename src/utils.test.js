@@ -1,15 +1,56 @@
-import { clickToCoords } from './utils'
+import { clickToCoords, stringToLines } from './utils'
+import wrap from 'word-wrapper'
+
+const measureChar = charWidth => (text, start, end, width) => {
+  const available = Math.floor(width / charWidth)
+  const total = Math.floor((end - start) * charWidth)
+  const glyphs = Math.min(end - start, available, total)
+  return {
+    start,
+    end: start + glyphs,
+  }
+}
+
+it('stringToLines', () => {
+  const expected = 'jozanza rules'
+  const actual = wrap.lines('jozanza rules', {
+    width: 35,
+    measure: measureChar(5),
+  })
+  // console.log(actual)
+})
 
 describe('clickToCoords', () => {
   const getNotScaledCoords = (clientX, clientY, rectWidth, rectHeight, scale) =>
-    getCoords(clientX, clientY, rectWidth, rectHeight, scale, rectWidth, rectHeight)
+    getCoords(
+      clientX,
+      clientY,
+      rectWidth,
+      rectHeight,
+      scale,
+      rectWidth,
+      rectHeight,
+    )
 
-  const getCoords = (clientX, clientY, rectWidth, rectHeight, scale, maxWidth, maxHeight) => {
+  const getCoords = (
+    clientX,
+    clientY,
+    rectWidth,
+    rectHeight,
+    scale,
+    maxWidth,
+    maxHeight,
+  ) => {
     const e = {
       clientX,
       clientY,
       target: {
-        getBoundingClientRect: () => ({ left: 0, top:0, width: rectWidth, height: rectHeight }),
+        getBoundingClientRect: () => ({
+          left: 0,
+          top: 0,
+          width: rectWidth,
+          height: rectHeight,
+        }),
       },
     }
     return clickToCoords(e, scale, maxWidth, maxHeight)
@@ -44,15 +85,15 @@ describe('clickToCoords', () => {
   })
 
   it('get with scaled rect', () => {
-    const { x: x1 , y: y1 } = getCoords(349, 2, 350, 1050, 10, 100, 300)
+    const { x: x1, y: y1 } = getCoords(349, 2, 350, 1050, 10, 100, 300)
     expect(x1).toBe(9)
     expect(y1).toBe(0)
 
-    const { x: x2 , y: y2 } = getCoords(182, 211, 200, 300, 10, 100, 300)
+    const { x: x2, y: y2 } = getCoords(182, 211, 200, 300, 10, 100, 300)
     expect(x2).toBe(9)
     expect(y2).toBe(21)
 
-    const { x: x3 , y: y3 } = getCoords(44, 211, 50, 300, 10, 100, 300)
+    const { x: x3, y: y3 } = getCoords(44, 211, 50, 300, 10, 100, 300)
     expect(x3).toBe(8)
     expect(y3).toBe(21)
   })

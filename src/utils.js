@@ -1,16 +1,97 @@
-export const drawRect = ({
-  id,
-  pixels,
-  hitmap,
-  imageData,
-  x,
-  y,
-  w,
-  h,
-  fill,
-  radius,
-}) => {
-  const { width, height } = imageData
+export const imageDataToPngBuffer = (encode, imageData) => {
+  const { data, width, height } = imageData
+  return encode([data.buffer], width, height, 0)
+}
+
+export const {
+  // ImageData polyfill for node
+  ImageData = class ImageData {
+    constructor(w, h, data) {
+      this.width = w
+      this.height = h
+      this.data = data || new Uint8ClampedArray(new ArrayBuffer(w * h * 4))
+    }
+  },
+} = window
+
+export const {
+  // window.perforance pollyfill for node
+  performance = {
+    now() {
+      const time = process.hrtime()
+      return time[0] * 1e3 + time[1] / 1e6
+    },
+  },
+} = window
+
+export const requestTimeout = (f, delay) => {
+  const start = performance.now()
+  const self = {
+    value: requestAnimationFrame(function loop() {
+      const current = performance.now()
+      const delta = current - start
+      if (delta >= delay) return f()
+      self.value = requestAnimationFrame(loop)
+    }),
+  }
+  return self
+}
+
+export const requestInterval = (f, delay) => {
+  const start = performance.now()
+  const self = {
+    value: requestAnimationFrame(function loop() {
+      const current = performance.now()
+      const delta = current - start
+      if (delta >= delay) {
+        f()
+        start = performance.now()
+      }
+      self.value = requestAnimationFrame(loop)
+    }),
+  }
+  return self
+}
+
+export const clearTimer = ({ value }) => cancelAnimationFrame(value)
+
+export const draw = {
+  rect({ screen, hitmap, sw, sh, x, y, w, h, fill, radius }) {
+    // skip totally transparent fills
+    // @todo - skip fills where only the alpha channel is 0
+    if (fill === 0) return
+    // calculate coordinates to skip due to border-radius
+    // secret bonus: also useful for drawing circles
+    const skips = calcBorderRadiusSkips(w, h, radius)
+    for (let row = 0; row < h; row++) {
+      const _y = row + y
+      if (_y < 0 || _y >= sh) continue // off-screen
+      for (let col = 0; col < w; col++) {
+        const _x = col + x
+        if (_x < 0 || _x >= sw) continue // off-screen
+        // skip border-radius coords
+        if (skips[row]) {
+          const s = skips[row]
+          if (col > s[0] || col < s[1]) continue
+        }
+        // pixel index
+        const idx = _y * sw + _x
+        // write visible pixels to uint32 array
+        screen[idx] = fill
+        // write id to hitmap
+        // hitmap[idx] = id
+      }
+    }
+  },
+}
+
+export const drawRect = (
+  // pixel8 context
+  { hitmap, screen, screenData },
+  // input data
+  { id, x, y, w, h, fill, radius },
+) => {
+  const { width, height } = screenData
   // skip transparent fills
   if (fill === 0) return
   // calculate coordinates to skip due to border-radius
@@ -18,10 +99,10 @@ export const drawRect = ({
   const skips = calcBorderRadiusSkips(w, h, radius)
   for (let row = 0; row < h; row++) {
     const _y = row + y
-    if (_y < 0 || _y >= height) continue // off-stage
+    if (_y < 0 || _y >= height) continue // off-screen
     for (let col = 0; col < w; col++) {
       const _x = col + x
-      if (_x < 0 || _x >= width) continue // off-stage
+      if (_x < 0 || _x >= width) continue // off-screen
       // skip border-radius coords
       if (skips[row]) {
         const s = skips[row]
@@ -30,25 +111,20 @@ export const drawRect = ({
       // pixel index
       const idx = _y * width + _x
       // write visible pixels to uint32 array
-      pixels[idx] = fill
+      screen[idx] = fill
       // write id to hitmap
       hitmap[idx] = id
     }
   }
 }
 
-export const drawUint32 = ({
-  id,
-  pixels,
-  hitmap,
-  imageData,
-  x,
-  y,
-  w,
-  h,
-  data,
-}) => {
-  const { width, height } = imageData
+export const drawUint32 = (
+  // pixel8 context
+  { hitmap, screen, screenData },
+  // input data
+  { id, x, y, w, h, data },
+) => {
+  const { width, height } = screenData
   for (let i = 0; i < h; i++) {
     const _y = y + i
     if (_y < 0 || _y >= height) continue
@@ -62,7 +138,7 @@ export const drawUint32 = ({
       // uint32 color
       const color = data[idx0]
       if (color === 0) continue
-      pixels[idx1] = color
+      screen[idx1] = color
       hitmap[idx1] = id
     }
   }
@@ -162,31 +238,21 @@ export const toImageData = img => {
 
 export const loadImageData = async path => toImageData(await loadImage(path))
 
-export const stringToLines = (words, charWidth, boxWidth) => {
-  const lines = ['']
-  for (const word of words) {
-    const line = lines[lines.length - 1]
-    const a = line.length * charWidth
-    // @TODO - support line-breaks properly
-    let n = 0 // word length
-    for (const char of word) {
-      if (char === '\n') break
-      n++
-    }
-    const b = n * charWidth + charWidth
-    const eol = a + b > boxWidth
-    let _word = eol ? '\n' + word + ' ' : word + ' '
-    while (_word.length) {
-      const [char] = _word
-      if (char === '\n') {
-        lines.push('')
-      } else {
-        lines[lines.length - 1] += char
-      }
-      _word = _word.substr(1)
-    }
+import wrap from 'word-wrapper'
+const measureChar = charWidth => (text, start, end, width) => {
+  const available = Math.floor(width / charWidth)
+  const total = Math.floor((end - start) * charWidth)
+  const glyphs = Math.min(end - start, available, total)
+  return {
+    start,
+    end: start + glyphs,
   }
-  return lines
+}
+export const stringToLines = (text, a, b) => {
+  return wrap(text, {
+    width: b,
+    measure: measureChar(a),
+  }).split(/\n/g)
 }
 
 export const stringToBytes = (
@@ -201,21 +267,16 @@ export const stringToBytes = (
   },
 ) => {
   const color = 'undefined' !== typeof fill ? toUint32(fill) : toUint32('#000')
-  const words = (Array.isArray(text) ? text.join('') : text).split(/[ ]/)
-  const lines = stringToLines(words, width, boxWidth)
-  // remove trailing space
-  if (lines[lines.length - 1] === ' ') lines[lines.length - 1].slice(0, -1)
+  const lines = stringToLines(text || '', width, boxWidth)
   // create pixel array
-  const bytes = new Uint32Array(boxWidth * boxHeight) // []
+  const bytes = new Uint32Array(boxWidth * boxHeight)
   // iterate lines
   for (let i = 0; i < lines.length; i++) {
     const row = lines[i]
     const y = i * lineHeight + yOffset
     const chars = [...row]
     if (y >= boxHeight) break
-    if (y < -height) {
-      continue
-    }
+    if (y < -height) continue
     // iterate letters
     for (let j = 0; j < chars.length; j++) {
       const char = chars[j]
@@ -227,7 +288,7 @@ export const stringToBytes = (
       pixels.forEach((px, i) => {
         const eol = i % width === width - 1
         const _y = y + n
-        const _x = x + i % width
+        const _x = x + i % width - 1
         bytes[_y * boxWidth + _x] = px ? color : px
         if (eol) n++
       })
@@ -238,9 +299,8 @@ export const stringToBytes = (
 
 export const clickToCoords = (e, scale, maxWidth, maxHeight) => {
   const rect = e.target.getBoundingClientRect()
-
-  const scaleX = scale * (rect.width / (maxWidth))
-  const scaleY = scale * (rect.height / (maxHeight))
+  const scaleX = scale * (rect.width / maxWidth)
+  const scaleY = scale * (rect.height / maxHeight)
   const x = Math.floor((e.clientX - rect.left) / scaleX)
   const y = Math.floor((e.clientY - rect.top) / scaleY)
   return { x, y }

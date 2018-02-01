@@ -1,4 +1,4 @@
-import Pixel8Element from './Pixel8Element'
+import Pixel8Element from './Element'
 import { drawUint32, stringToBytes } from '../utils'
 import fonts from '../fonts'
 
@@ -15,7 +15,18 @@ export default class Text extends Pixel8Element {
   }
   draw(f = x => x) {
     this.computedProps = f(this.props)
-    const { x, y, text, lineHeight, font, fill, width, height, yOffset } = this.computedProps
+    const {
+      x,
+      y,
+      text,
+      lineHeight,
+      font,
+      fill,
+      width,
+      height,
+      yOffset,
+    } = this.computedProps
+    // console.log(text)
     const data = stringToBytes(text, {
       lineHeight: lineHeight || font.height,
       font:
@@ -29,17 +40,13 @@ export default class Text extends Pixel8Element {
       boxHeight: height,
       yOffset,
     })
-    const { pixels, hitmap, imageData } = this.root
-    drawUint32({
+    drawUint32(this.ctx, {
       id: this.id,
       x: Math.round(x),
       y: Math.round(y),
       w: Math.round(width),
       h: Math.round(height),
       data,
-      pixels,
-      hitmap,
-      imageData,
     })
   }
 }

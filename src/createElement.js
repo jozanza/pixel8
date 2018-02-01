@@ -1,12 +1,12 @@
-import Animation from './elements/Animation'
-import Circle from './elements/Circle'
-import PixelBuffer from './elements/PixelBuffer'
-import Rectangle from './elements/Rectangle'
-import Sprite from './elements/Sprite'
-import Text from './elements/Text'
-import Transition from './elements/Transition'
+import Animation from './core/Animation'
+import Circle from './core/Circle'
+import PixelBuffer from './core/PixelBuffer'
+import Rectangle from './core/Rectangle'
+import Sprite from './core/Sprite'
+import Text from './core/Text'
+import Transition from './core/Transition'
 
-export default function createElement (type, props, root) {
+export default function createElement(type, props, root) {
   // console.log(type, props, root)
   switch (type) {
     /**

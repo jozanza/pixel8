@@ -1,4 +1,4 @@
-import Pixel8Element from './Pixel8Element'
+import Pixel8Element from './Element'
 import easing from '../easing'
 
 const once = f => {

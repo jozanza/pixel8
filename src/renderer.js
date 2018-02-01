@@ -2,7 +2,7 @@ import Reconciler from 'react-reconciler'
 
 export default createElement => {
   /** Reconciler */
-  const PixelRenderer = Reconciler({
+  const Pixel8Renderer = Reconciler({
     /**
      * Host context getters
      */
@@ -12,7 +12,7 @@ export default createElement => {
      * Component instance creation
      */
     createInstance: function createInstance(type, props, root, host, fiber) {
-      return createElement(type, props, root, null)
+      return createElement(type, props, root.pixel8, null)
     },
     appendInitialChild: (parent, child) => {
       parent.appendChild(child)
@@ -32,13 +32,13 @@ export default createElement => {
      * Text handling
      */
     createTextInstance: (text, root, fiber) => {
-      throw new Error('Raw text children are not supported by <PixelCanvas>')
+      throw new Error('Raw text children are not supported by <Stage>')
     },
     commitTextUpdate: () => {
-      throw new Error('Raw text children are not supported by <PixelCanvas>')
+      throw new Error('Raw text children are not supported by <Stage>')
     },
     resetTextContent: elem => {
-      throw new Error('Raw text children are not supported by <PixelCanvas>')
+      throw new Error('Raw text children are not supported by <Stage>')
     },
     shouldSetTextContent: () => false,
     /**
@@ -75,7 +75,7 @@ export default createElement => {
       },
       commitMount: (inst, payload, type, props, nextProps) => {},
       commitTextUpdate: (inst, text, nextText) => {
-        throw new Error('Raw text children are not supported by <PixelCanvas>')
+        throw new Error('Raw text children are not supported by <Stage>')
       },
     },
   })
@@ -84,34 +84,29 @@ export default createElement => {
   const injectIntoDevTools = () => {
     if (injected) return
     injected = true
-    PixelRenderer.injectIntoDevTools({
+    Pixel8Renderer.injectIntoDevTools({
       bundleType: 1, // 0 for PROD, 1 for DEV
       version: '0.0.0', // version for your renderer
-      rendererPackageName: 'pixel-renderer', // package name
-      findHostInstanceByFiber: PixelRenderer.findHostInstance, // host instance (root)
+      rendererPackageName: 'pixel8-renderer', // package name
+      findHostInstanceByFiber: Pixel8Renderer.findHostInstance, // host instance (root)
     })
   }
 
-  const render = pixelCanvas => {
+  const render = stage => {
     injectIntoDevTools()
-    pixelCanvas.root =
-      pixelCanvas.root ||
-      PixelRenderer.createContainer(pixelCanvas, pixelCanvas.canvas)
-    PixelRenderer.updateContainer(
-      pixelCanvas.props.children,
-      pixelCanvas.root,
-      pixelCanvas,
-    )
+    stage.root =
+      stage.root || Pixel8Renderer.createContainer(stage, stage.canvas)
+    Pixel8Renderer.updateContainer(stage.props.children, stage.root, stage)
   }
 
-  const unmount = pixelCanvas => {
-    PixelRenderer.updateContainer(null, pixelCanvas.root, pixelCanvas)
+  const unmount = stage => {
+    Pixel8Renderer.updateContainer(null, stage.root, stage)
   }
 
   return {
     injectIntoDevTools,
     render,
     unmount,
-    PixelRenderer,
+    Pixel8Renderer,
   }
 }

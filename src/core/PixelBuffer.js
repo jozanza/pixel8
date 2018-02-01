@@ -1,4 +1,4 @@
-import Pixel8Element from './Pixel8Element'
+import Pixel8Element from './Element'
 import { drawUint32 } from '../utils'
 
 export default class PixelBuffer extends Pixel8Element {
@@ -11,9 +11,18 @@ export default class PixelBuffer extends Pixel8Element {
   }
   draw(f = x => x) {
     this.computedProps = f(this.props)
-    const { type, x, y, width, height, data, map, name, palette } = this.computedProps
-    const { pixels, hitmap, imageData } = this.root
-    drawUint32({
+    const {
+      type,
+      x,
+      y,
+      width,
+      height,
+      data,
+      map,
+      name,
+      palette,
+    } = this.computedProps
+    drawUint32(this.ctx, {
       id: this.id,
       x: Math.round(x),
       y: Math.round(y),
@@ -28,9 +37,6 @@ export default class PixelBuffer extends Pixel8Element {
               Uint32Array.from(data, map)
             : // ArrayBuffer or TypedArray
               new Uint32Array(data.buffer || data, map),
-      pixels,
-      hitmap,
-      imageData,
     })
   }
 }
