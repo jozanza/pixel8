@@ -8,11 +8,11 @@
 [![NPM Downloads](https://img.shields.io/npm/dm/pixel8.svg?style=flat)](https://www.npmjs.org/package/pixel8)
 [![Join the chat at https://gitter.im/vsmode/pixel8](https://badges.gitter.im/Join%20Chat.svg)](https://gitter.im/vsmode/pixel8?utm_source=badge&utm_medium=badge&utm_campaign=pr-badge&utm_content=badge)
 
-[Pixel8](https://pixel8.vsmode.org/) is a tiny JavaScript library for creating pixel art and games.
+[pixel8](https://pixel8.vsmode.org/) is a tiny JavaScript library for creating pixel art and games.
 
 - **Easy-to-use:** Simply use JSX to add/update/remove interactive shapes and sprites. With this library, you can create low-res UIs using the same techniques you would in any other application. And since it's just like any other JavaScript app, you can continue to use all of the tools and libraries you do in all your other projects.
 
-- **Performant:** Under the hood, Pixel8 avoids Canvas's stateful/mutable API and relies primarily on `ArrayBuffer`s to render bytes representing pixels directly to a `<canvas>` `2dContext`. This low-level architecture gives Pixel8 a proper "8-bit" aesthetic, solid performance, and lets future development easily take advantage of new and experimental browser APIs such as `OffscreenCanvas`, `SharedArrayBuffer`, and `WebAssembly`.
+- **Performant:** Under the hood, pixel8 avoids Canvas's stateful/mutable API and relies primarily on `ArrayBuffer`s to render bytes representing pixels directly to a `<canvas>` `2dContext`. This low-level architecture gives pixel8 a proper "8-bit" aesthetic, solid performance, and lets future development easily take advantage of new and experimental browser APIs such as `OffscreenCanvas`, `SharedArrayBuffer`, and `WebAssembly`.
 
 - **Customizable:** There are no limitations on color palettes, resolutions, memory/cpu usage, etc. You can make your app look like it was created on a ZX Spectrum or a Game Boy. It's entirely up to you. And it's up to the community to develop an ecosystem of tools and libraries that can enforce tasteful constraints for those who wish to opt-in to them.
 
@@ -67,7 +67,7 @@ In addition to the examples in the docs, here are a couple more
 
 ### Handling User Input
 
-[![Edit Pixel8 Demo - Keyboard Interaction](https://codesandbox.io/static/img/play-codesandbox.svg)](https://codesandbox.io/s/r75ymwn34o)
+[![Edit pixel8 Demo - Keyboard Interaction](https://codesandbox.io/static/img/play-codesandbox.svg)](https://codesandbox.io/s/r75ymwn34o)
 
 ```js
 import React from 'react'
@@ -122,7 +122,7 @@ render(<App />, document.getElementById('root'))
 
 ### Simple Pixel Editor
 
-[![Edit Pixel8 Demo - Pixel Editor](https://codesandbox.io/static/img/play-codesandbox.svg)](https://codesandbox.io/s/0pvmw4k20l)
+[![Edit pixel8 Demo - Pixel Editor](https://codesandbox.io/static/img/play-codesandbox.svg)](https://codesandbox.io/s/0pvmw4k20l)
 
 ```js
 import React from 'react'
@@ -228,6 +228,6 @@ If you **find a bug**, have a cool **idea for a feature**, want to see some spec
 
 ## License
 
-Pixel8 is MIT licensed. See [LICENSE](/LICENSE.md).
+pixel8 is MIT licensed. See [LICENSE](/LICENSE.md).
 
 <p align="center"><strong>♥</strong></p>
