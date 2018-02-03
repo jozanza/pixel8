@@ -16,8 +16,6 @@ A collection of low-res primitives for creating art and games in JSX
 
 - **Customizable:** As much as possible, Pixel8 doesn't make any assumptions about what you're going for. There are no limitations on color palettes, resolutions, memory/cpu usage, etc. You can make your canvas look like it was created on a ZX Spectrum or a Game Boy. It's entirely up to you. And it's up to the community to develop an ecosystem of tools and libraries that can enforce tasteful constraints for those who wish to opt-in to them.
 
-## Table of Contents
-
 - [Installation](#installation)
 - [Usage](#usage)
 - [Examples](#examples)
@@ -60,10 +58,12 @@ But seriously, [check out the docs](https://pixel8.vsmode.org/). They are very d
 
 In addition to the examples in the docs, here are a couple more
 
-- [keyboard interaction](#keyboard-interaction)
-- [pixel editor](#pixel-editor)
+- [Handling Keyboard Interaction](#handling-keyboard-interaction)
+- [Simple Pixel Editor](#simple-pixel-editor)
 
-### Keyboard Interaction
+### Handling Keyboard Interaction
+
+[![Edit Pixel8 Demo - Keyboard Interaction](https://codesandbox.io/static/img/play-codesandbox.svg)](https://codesandbox.io/s/r75ymwn34o)
 
 ```js
 import React from 'react'
@@ -116,9 +116,9 @@ render(<App />, document.getElementById('root'))
 
 ```
 
-[![Edit Pixel8 Demo - Keyboard Interaction](https://codesandbox.io/static/img/play-codesandbox.svg)](https://codesandbox.io/s/r75ymwn34o)
+### Simple Pixel Editor
 
-### Pixel Editor
+[![Edit Pixel8 Demo - Pixel Editor](https://codesandbox.io/static/img/play-codesandbox.svg)](https://codesandbox.io/s/0pvmw4k20l)
 
 ```js
 import React from 'react'
