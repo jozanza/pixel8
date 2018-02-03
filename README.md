@@ -230,4 +230,4 @@ If you **find a bug**, have a cool **idea for a feature**, want to see some spec
 
 Pixel8 is MIT licensed. See [LICENSE](/LICENSE.md).
 
-**♥**
+<strong align="center">♥</strong>
