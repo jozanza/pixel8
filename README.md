@@ -58,10 +58,10 @@ But seriously, [check out the docs](https://pixel8.vsmode.org/). They are very d
 
 In addition to the examples in the docs, here are a couple more
 
-- [Handling Keyboard Interaction](#handling-keyboard-interaction)
+- [Handling User Input](#handling-user-input)
 - [Simple Pixel Editor](#simple-pixel-editor)
 
-### Handling Keyboard Interaction
+### Handling User Input
 
 [![Edit Pixel8 Demo - Keyboard Interaction](https://codesandbox.io/static/img/play-codesandbox.svg)](https://codesandbox.io/s/r75ymwn34o)
 
@@ -210,7 +210,7 @@ render(<App />, document.getElementById('root'))
 
 ```
 
-### Community
+## Community
 
 You can find the pixel8 community online in several places:
 
@@ -218,6 +218,6 @@ You can find the pixel8 community online in several places:
 - [Gitter](https://gitter.im/vsmode/pixel8)
 - [Twitter](https://twitter.com/jozanza)
 
-## Issues? Questions? Contributions?
+### Issues? Questions? Contributions?
 
 Feel free to [create an issue](https://github.com/vsmode/pixel8/issues), jump into the [gitter channel](https://gitter.im/vsmode/pixel8), or shoot me a message on [twitter](https://twitter.com/jozanza)
