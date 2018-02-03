@@ -10,8 +10,6 @@
 
 A collection of low-res primitives for creating art and games in JSX
 
-## Goals
-
 - **Easy-to-use:** Most game frameworks require a lot of reading and experimentation to get up-to-speed. Pixel8 puts JSX at its core so you create low-res UIs just like you would any other. Not to mention, you can still use all of the tools and libraries you do in all your other projects.
 
 - **Performant:** Under the hood, Pixel8 avoids Canvas's stateful/mutable API and relies primarily on `ArrayBuffer`s to render bytes representing pixels directly to a `<canvas>` `2dContext`. This low-level architecture gives Pixel8 a proper "8-bit" aesthetic, solid performance, and lets future development easily take advantage of new and experimental browser APIs such as `OffscreenCanvas`, `SharedArrayBuffer`, and `WebAssembly`.
