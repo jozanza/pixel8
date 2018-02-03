@@ -1,8 +1,3 @@
-export const imageDataToPngBuffer = (encode, imageData) => {
-  const { data, width, height } = imageData
-  return encode([data.buffer], width, height, 0)
-}
-
 export const {
   // ImageData polyfill for node
   ImageData = class ImageData {
@@ -38,7 +33,7 @@ export const requestTimeout = (f, delay) => {
 }
 
 export const requestInterval = (f, delay) => {
-  const start = performance.now()
+  let start = performance.now()
   const self = {
     value: requestAnimationFrame(function loop() {
       const current = performance.now()

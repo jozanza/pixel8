@@ -1,6 +1,16 @@
 import 'raf/polyfill'
+import expect from 'expect'
+import { configureToMatchImageSnapshot } from 'jest-image-snapshot'
+import UPNG from 'upng-js'
 
-import Enzyme from 'enzyme'
-import Adapter from 'enzyme-adapter-react-16'
+global.toPngBuffer = imageData => {
+  const { data, width, height } = imageData
+  return Buffer.from(UPNG.encode([data.buffer], width, height, 0))
+}
 
-Enzyme.configure({ adapter: new Adapter() })
+const toMatchImageSnapshot = configureToMatchImageSnapshot({
+  customDiffConfig: { threshold: 0 },
+  noColors: true,
+})
+
+expect.extend({ toMatchImageSnapshot })
