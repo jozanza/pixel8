@@ -4,12 +4,11 @@
   <h1>P I X E L 8</h1>  
 </div>
 
-
-A collection of low-res primitives for creating art and games with React
-
 [![NPM Version](https://img.shields.io/npm/v/pixel8.svg?style=flat)](https://www.npmjs.org/package/pixel8)
 [![NPM Downloads](https://img.shields.io/npm/dm/pixel8.svg?style=flat)](https://www.npmjs.org/package/pixel8)
 [![Join the chat at https://gitter.im/vsmode/pixel8](https://badges.gitter.im/Join%20Chat.svg)](https://gitter.im/vsmode/pixel8?utm_source=badge&utm_medium=badge&utm_campaign=pr-badge&utm_content=badge)
+
+A collection of low-res primitives for creating art and games in JSX
 
 ## Why?
 
