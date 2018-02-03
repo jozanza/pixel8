@@ -1,7 +1,7 @@
 
 <div align="center">
   <img src="/assets/logo.png" />
-  <h1>Pixel8</h1>  
+  <h1>P I X E L 8</h1>  
 </div>
 
 
