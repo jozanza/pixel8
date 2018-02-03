@@ -22,6 +22,7 @@ ___
 - [Usage](#usage)
 - [Examples](#examples)
 - [Community](#community)
+- [License](#license)
 
 ## Installation
 
@@ -215,7 +216,7 @@ render(<App />, document.getElementById('root'))
 
 ## Community
 
-You can find the pixel8 community online in several places:
+You can join the pixel8 community online in several places:
 
 - [Code Sandbox](https://codesandbox.io/search?query=&refinementList%5Bnpm_dependencies.dependency%5D%5B0%5D=pixel8&page=1)
 - [Gitter](https://gitter.im/vsmode/pixel8)
@@ -223,4 +224,10 @@ You can find the pixel8 community online in several places:
 
 ### Issues? Questions? Contributions?
 
-Feel free to [create an issue](https://github.com/vsmode/pixel8/issues), jump into the [gitter channel](https://gitter.im/vsmode/pixel8), or shoot me a message on [twitter](https://twitter.com/jozanza)
+If you find a bug, have a cool idea for a feature, or want to see some specific examples, please get in touch! Feel free to [create an issue](https://github.com/vsmode/pixel8/issues), jump into the [gitter channel](https://gitter.im/vsmode/pixel8), or shoot me a message on [twitter](https://twitter.com/jozanza)
+
+## License
+
+Pixel8 is MIT licensed. See [LICENSE](/LICENSE.md).
+
+**<3**
