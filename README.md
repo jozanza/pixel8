@@ -16,6 +16,8 @@ A collection of low-res primitives for creating art and games in JSX
 
 - **Customizable:** As much as possible, Pixel8 doesn't make any assumptions about what you're going for. There are no limitations on color palettes, resolutions, memory/cpu usage, etc. You can make your canvas look like it was created on a ZX Spectrum or a Game Boy. It's entirely up to you. And it's up to the community to develop an ecosystem of tools and libraries that can enforce tasteful constraints for those who wish to opt-in to them.
 
+___
+
 - [Installation](#installation)
 - [Usage](#usage)
 - [Examples](#examples)
