@@ -54,7 +54,7 @@ render(<App />, document.getElementById('root'))
 
 ```
 
-But seriously, [check out the docs](https://pixel8.vsmode.org/). They are very detailed yet easy to understand ;)
+But seriously, [check out the docs](https://pixel8.vsmode.org/). They are very detailed + easy to understand ;)
 
 ## Examples
 
@@ -62,6 +62,7 @@ In addition to the examples in the docs, here are a couple more
 
 - [Handling User Input](#handling-user-input)
 - [Simple Pixel Editor](#simple-pixel-editor)
+- More coming soon...
 
 ### Handling User Input
 
