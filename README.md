@@ -224,7 +224,7 @@ You can join the pixel8 community online in several places:
 
 ### Issues? Questions? Contributions?
 
-If you find a bug, have a cool idea for a feature, or want to see some specific examples, please get in touch! Feel free to [create an issue](https://github.com/vsmode/pixel8/issues), jump into the [gitter channel](https://gitter.im/vsmode/pixel8), or shoot me a message on [twitter](https://twitter.com/jozanza)
+If you **find a bug**, have a cool **idea for a feature**, want to see some specific **code examples/tutorials**, or just want to **say hello**, please get in touch! Feel free to [create an issue](https://github.com/vsmode/pixel8/issues), jump into the [gitter channel](https://gitter.im/vsmode/pixel8), or shoot me a message on [twitter](https://twitter.com/jozanza)
 
 ## License
 
