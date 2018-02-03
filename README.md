@@ -8,13 +8,13 @@
 [![NPM Downloads](https://img.shields.io/npm/dm/pixel8.svg?style=flat)](https://www.npmjs.org/package/pixel8)
 [![Join the chat at https://gitter.im/vsmode/pixel8](https://badges.gitter.im/Join%20Chat.svg)](https://gitter.im/vsmode/pixel8?utm_source=badge&utm_medium=badge&utm_campaign=pr-badge&utm_content=badge)
 
-[Pixel8](https://pixel8.vsmode.org/) is a JavaScript library for creating pixel art and games using JSX.
+[Pixel8](https://pixel8.vsmode.org/) is a tiny JavaScript library for creating pixel art and games.
 
-- **Easy-to-use:** Most game frameworks require a lot of reading and experimentation to get up-to-speed. Pixel8 puts JSX at its core so you create low-res UIs just like you would any other. Not to mention, you can still use all of the tools and libraries you do in all your other projects.
+- **Easy-to-use:** Simply use JSX to add/update/remove interactive shapes and sprites. With this library, you can create low-res UIs using the same techniques you would in any other application. And since it's just like any other JavaScript app, you can continue to use all of the tools and libraries you do in all your other projects.
 
 - **Performant:** Under the hood, Pixel8 avoids Canvas's stateful/mutable API and relies primarily on `ArrayBuffer`s to render bytes representing pixels directly to a `<canvas>` `2dContext`. This low-level architecture gives Pixel8 a proper "8-bit" aesthetic, solid performance, and lets future development easily take advantage of new and experimental browser APIs such as `OffscreenCanvas`, `SharedArrayBuffer`, and `WebAssembly`.
 
-- **Customizable:** As much as possible, Pixel8 doesn't make any assumptions about what you're going for. There are no limitations on color palettes, resolutions, memory/cpu usage, etc. You can make your canvas look like it was created on a ZX Spectrum or a Game Boy. It's entirely up to you. And it's up to the community to develop an ecosystem of tools and libraries that can enforce tasteful constraints for those who wish to opt-in to them.
+- **Customizable:** There are no limitations on color palettes, resolutions, memory/cpu usage, etc. You can make your app look like it was created on a ZX Spectrum or a Game Boy. It's entirely up to you. And it's up to the community to develop an ecosystem of tools and libraries that can enforce tasteful constraints for those who wish to opt-in to them.
 
 ___
 
