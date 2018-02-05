@@ -8,7 +8,7 @@
 [![NPM Downloads](https://img.shields.io/npm/dm/pixel8.svg?style=flat)](https://www.npmjs.org/package/pixel8)
 [![Join the chat at https://gitter.im/vsmode/pixel8](https://badges.gitter.im/Join%20Chat.svg)](https://gitter.im/vsmode/pixel8?utm_source=badge&utm_medium=badge&utm_campaign=pr-badge&utm_content=badge)
 
-[pixel8](https://pixel8.vsmode.org/) is a tiny JavaScript library for creating pixel art and games.
+[pixel8](https://pixel8.vsmode.org/) is a minimal JavaScript library for creating pixel art and games.
 
 - **Easy-to-use:** Simply use JSX to add/update/remove interactive shapes and sprites. With this library, you can create low-res UIs using the same techniques you would in any other application. And since it's just like any other JavaScript app, you can continue to use all of the tools and libraries you do in all your other projects.
 

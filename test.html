@@ -1,0 +1,31 @@
+<html>
+
+<body>
+  <canvas id="root" />
+  <script charset="utf-8" src="file://~/Documents/pixel8/dist/index.js"></script>
+  <script charset="utf-8" src="file://~/Documents/pixel8/babel.min.js"></script>
+  <script charset="utf-8" type="text/babel" data-presets="es2015,stage-0,react">
+    import { h, render } from 'pixel8'
+    // @jsx h
+    render(({ frame }) => {
+      console.log(frame)
+      return (
+        <stage
+          fps={1}
+          width={128}
+          height={128}
+          scale={3}
+          background="#000"
+        >
+          <rect x={0} y={0} width={8} height={8} fill="#f0f" />
+          <circ x={32} y={32} radius={8} fill="#f0f" />
+          <pixel x={0} y={16} color="#0f0" />
+          <pixel x={4} y={16} color="#0f0" />
+          <pixel x={8} y={16} color="#0f0" />
+        </stage>
+      )
+    }, document.getElementById('root'))
+  </script>
+</body>
+
+</html>

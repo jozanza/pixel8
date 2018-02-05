@@ -1,4 +1,11 @@
-import { requestTimeout, clearTimer, ImageData, toUint32, draw } from '../utils'
+import {
+  requestTimeout,
+  clearTimer,
+  ImageData,
+  toUint32,
+  draw,
+  Timer,
+} from '../utils'
 
 /**
  * ----------------------------------------------------------------------------
@@ -23,12 +30,12 @@ type VNodeFn = (type: string, props: Object) => VNode
  */
 
 /**
-  * Creates a VNode. This is the function to set as the jsx pragma
-  * @param {string | VNodeFn} type - the vnode type
-  * @param {Object} props - vnode props
-  * @param {Array<VNode | Array<VNode> | void>} children - nested vnodes
-  * @return {VNode}
-  */
+ * Creates a VNode. This is the function to set as the jsx pragma
+ * @param {string | VNodeFn} type - the vnode type
+ * @param {Object} props - vnode props
+ * @param {Array<VNode | Array<VNode> | void>} children - nested vnodes
+ * @return {VNode}
+ */
 export const h = (type, props = {}, ...children) => {
   return typeof type === 'function'
     ? type(props, children)
@@ -43,7 +50,7 @@ export const h = (type, props = {}, ...children) => {
  * Maps over a VNode child, converting it into a VNode or array of VNodes
  * @param {VNode | Array<VNode> | void} child - item to transform into a VNode
  * @param {string | number} [key] - optional VNode key. Only used as a fallback
- *                                  when props.key is not defined on child of 
+ *                                  when props.key is not defined on child of
  *                                  'list' type VNode
  * @return {VNode | Array<VNode>}
  */
@@ -117,11 +124,12 @@ export const createElement = ({ type, props, children }) => {
  * Applies updates to a VirtualDOMElement and its children
  * It does so by diffing an element's current vnode with its next
  * @param {VirtualDOMElement} [parent] - the parent element
- * @param {VirtualDOMElement} [element] - the element being updated 
+ * @param {VirtualDOMElement} [element] - the element being updated
  * @param {VNode} [node] - the current VNode for the element
  * @param {VNode} [nextNode] - the next VNode for the element
  */
 const updateElement = (parent, element, node, nextNode) => {
+  if (element) element.update()
   // noop
   if (node === nextNode) {
   }
@@ -197,33 +205,103 @@ export class VirtualDOMElement {
    */
   parent = null
   /**
+   * Holds any transition timers
+   * @type {{ [key: string]: Timer }}
+   */
+  transitionTimers = {}
+  /**
+   * Holds any animation timers
+   * @type {{ [key: string]: Timer }}
+   */
+  animationTimers = {}
+  /**
    * Set props, and append children
    * @param {Object} props - VNode props
    * @param {Array<VNode>} children - direct child VNodes
    */
   constructor(props = {}, children = []) {
-    this.props = props
-    this.children = new Set()
-    // set element props
     this.setProps(props)
+    this.children = new Set()
+    // initialze element
+    this.init()
     // create element children
     for (var i = 0; i < children.length; i++) {
       this.appendChild(createElement(children[i]))
     }
   }
-  // Considering adding some lifcycle methods...
-  // init() {}
-  // update() {}
-  // destroy() {}
+  /**
+   * Called when element is created
+   */
+  init() {
+    const { onCreate } = this.props
+    if ('function' !== typeof onCreate) return
+    onCreate()
+  }
+  /**
+   * Called when element is updated
+   */
+  update() {
+    const { onUpdate } = this.props
+    const animationTimers = Object.entries(this.animationTimers)
+    for (const [key, timer] of animationTimers) {
+      timer.next()
+      // console.log(Timer.format(+timer))
+    }
+    const transitionTimers = Object.entries(this.transitionTimers)
+    for (const [key, timer] of transitionTimers) {
+      timer.next()
+      // console.log(+timer)
+      if (timer * 100 >= 99.99) timer.off()
+      // console.log(Timer.format(+timer))
+    }
+    if ('function' !== typeof onUpdate) return
+    onUpdate()
+  }
+  /**
+   * Called just before element is destroyed
+   */
+  destroy() {
+    const { onDestroy } = this.props
+    if ('function' !== typeof onDestroy) return
+    onDestroy()
+  }
   /**
    * Receives next props and merges them into the current
    * @param {Object} nextProps - the incoming VNode props
    */
   setProps(nextProps) {
+    if (nextProps.transition) {
+      const transitions = Object.entries(nextProps.transition)
+      const prevTimers = this.transitionTimers
+      this.transitionTimers = nextProps.transition
+      for (const [key, options] of transitions) {
+        this.transitionTimers[key] = prevTimers[key]
+          ? prevTimers[key]
+          : new Timer(options).off()
+        if (this.props && this.props[key] !== nextProps[key]) {
+          this[`_${key}`] = this.props[key]
+          this.transitionTimers[key].on()
+        }
+      }
+    }
     this.props = {
       ...this.props,
       ...nextProps,
     }
+  }
+  getX() {
+    if (!this.transitionTimers.x) return this.props.x || 0
+    const xTimer = this.transitionTimers.x
+    const a = this.props.x || 0
+    const b = this._x || 0
+    const diff = a - b
+    return Math.round(b + xTimer * diff)
+  }
+  getRelativeX() {
+    const parentX = this.parent ? this.parent.getRelativeX() : 0
+    const x = this.getX()
+    console.log(x)
+    return x + parentX
   }
   /**
    * Appends a child element and sets its parent prop
@@ -232,7 +310,6 @@ export class VirtualDOMElement {
   appendChild(child) {
     this.children.add(child)
     child.parent = this
-    // child.init()
     return this
   }
   /**
@@ -242,7 +319,7 @@ export class VirtualDOMElement {
   removeChild(child) {
     this.children.delete(child)
     child.parent = null
-    // child.destroy()
+    child.destroy()
     return this
   }
 }
@@ -291,7 +368,10 @@ export class Nothing extends VirtualDOMElement {
  * @param {HTMLCanvasElement} [canvas]
  */
 export const render = (view, canvas, ctx = {}) => {
+  if (canvas) autoCancelRender(canvas, ctx)
   ctx.next = ctx.next || requestTimeout
+  ctx.cancel = ctx.cancel || clearTimer
+  ctx.done = () => ctx.cancel(ctx.timer)
   ctx.frame = ctx.frame + 1 || 0
   const stage = typeof view === 'function' ? view({ frame: ctx.frame }) : view
   if (stage.type !== 'stage') throw new Error('root element must be <stage>')
@@ -318,13 +398,35 @@ export const render = (view, canvas, ctx = {}) => {
     canvas.height = height
     canvas.style.imageRendering = 'pixelated'
     canvas.style.transform = `scale(${scale})`
+    canvas.style.transformOrigin = '0 0'
     canvas.style.background = background
     canvas.getContext('2d').putImageData(ctx.imageData, 0, 0)
   }
   // repeat :)
-  ctx.next(() => render(view, canvas, ctx), 1 / fps * 1000)
+  ctx.timer = ctx.next(() => render(view, canvas, ctx), 1 / fps * 1000)
   return ctx
 }
+
+/**
+ * If multiple render calls target the same <canvas> DOM element,
+ * this function automatically cancels all render loops execept for the latest
+ * @param {HTMLCanvasElement} canvas - <canvas> DOM element to render to
+ * @param {Object} ctx - pixel8 render() ctx argument
+ */
+export const autoCancelRender = (() => {
+  const elems = new WeakMap()
+  return (canvas, ctx) => {
+    if (elems.has(canvas) && ctx.frame === void 0) {
+      // call the cancel callback
+      const cancel = elems.get(canvas)
+      cancel()
+    } else {
+      // update the cancel callback
+      const cancel = () => ctx.cancel(ctx.timer)
+      elems.set(canvas, cancel)
+    }
+  }
+})()
 
 /**
  * Converts a VirtualDOMElement and its children into ImageData
@@ -400,12 +502,13 @@ export const drawElement = ({ screen, hitmap, rootElement, element }) => {
       })
       break
     case 'pixel':
+      // console.log(element.getRelativeX())
       draw.rect({
         screen,
         hitmap,
         sw: width,
         sh: height,
-        x: (parentProps.x || 0) + (props.x || 0),
+        x: element.getRelativeX(),
         y: (parentProps.y || 0) + (props.y || 0),
         w: 1,
         h: 1,

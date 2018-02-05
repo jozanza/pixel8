@@ -1,3 +1,5 @@
+import * as easingUtils from 'easing-utils'
+
 export const {
   // ImageData polyfill for node
   ImageData = class ImageData {
@@ -18,6 +20,87 @@ export const {
     },
   },
 } = window
+
+export class Timer {
+  static forwards = 1
+  static backwards = -1
+  static format(t) {
+    return (t * 100).toFixed(2) + '%'
+  }
+  constructor({
+    progress = 0,
+    duration = 1,
+    delay = 0,
+    iterations = Infinity,
+    reverse = false,
+    ease = 'linear',
+  } = {}) {
+    this.direction = Timer.forwards
+    this.iterations = iterations
+    this.reverse = reverse
+    this.duration = duration
+    this.delay = delay
+    this.wait = delay
+    this.progress = progress
+    this.step = 1 / (duration - 1)
+    this.ease = ease
+  }
+  next() {
+    if (this.disabled) return
+    if (this.wait > 0) this.wait--
+    else if (this.direction === Timer.forwards) {
+      this.progress += this.step
+      if (this.progress >= 1) {
+        if (this.reverse) {
+          this.direction = Timer.backwards
+          this.reset()
+          if (this.delay === 0) this.progress -= this.step
+          else {
+            this.wait--
+          }
+        } else {
+          this.reset()
+        }
+      }
+    } else if (this.direction === Timer.backwards) {
+      this.progress -= this.step
+      if (this.progress <= 0) {
+        if (this.reverse) {
+          this.direction = Timer.forwards
+          this.reset()
+          if (this.delay === 0) this.progress += this.step
+          else {
+            this.wait--
+          }
+        } else {
+          this.reset()
+        }
+      }
+    }
+  }
+  on() {
+    this.disabled = false
+    return this
+  }
+  off() {
+    this.disabled = true
+    return this
+  }
+  reset() {
+    this.wait = this.delay
+    this.progress = this.direction === Timer.forwards ? 0 : 1
+  }
+  toString() {
+    return Timer.format(this.progress)
+  }
+  valueOf() {
+    const f = easingUtils[this.ease]
+    return f ? f(this.progress) : this.progress
+  }
+  [Symbol.toPrimitive](hint) {
+    return hint == 'number' ? this.valueOf() : this.toString()
+  }
+}
 
 export const requestTimeout = (f, delay) => {
   const start = performance.now()
@@ -302,6 +385,7 @@ export const clickToCoords = (e, scale, maxWidth, maxHeight) => {
 }
 
 export default {
+  Timer,
   drawRect,
   drawUint32,
   chord,

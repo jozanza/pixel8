@@ -9,6 +9,7 @@
     "url": "https://github.com/vsmode/pixel8.git"
   },
   "dependencies": {
+    "easing-utils": "^0.0.7",
     "prop-types": "^15.6.0",
     "react": "^16.1.0",
     "react-auto-scale": "^1.0.4",
