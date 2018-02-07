@@ -42,7 +42,7 @@ export class Timer {
     this.delay = delay
     this.wait = delay
     this.progress = progress
-    this.step = 1 / (duration - 1)
+    this.step = 1 / duration
     this.ease = ease
   }
   next() {

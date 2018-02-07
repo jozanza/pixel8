@@ -10,24 +10,51 @@ const timer = new Timer({
   reverse: true,
 })
 
+const getTransitionValue = (
+  from,
+  to,
+  { progress = 0, duration = 1, ease = x => x } = {},
+) => {
+  const step = 1 / duration
+  const t = ease(step * progress)
+  const diff = to - from
+  const val = diff * t
+  return from + val
+}
+
 const App = ({ frame }) => {
-  // console.log(
-  //   Timer.format(+timer),
-  //   '--->',
-  //   Timer.format(easeInOutCubic(+timer)),
-  // )
-  // timer.next()
+  const x = frame > 0 ? 8 : 0
+  // const n = Math.floor(frame / 16)
+  // const x = n * 8
+  const val = getTransitionValue(0, x, {
+    progress: Math.min(8, Math.max(0, frame - 1)),
+    duration: 8
+  })
+  console.log('frame:', frame, 'x:', val)
   return (
     <stage fps={2} width={32} height={32} scale={8} background="#000">
       <pixel
-        x={(Math.floor(frame / 16) * 4) - 1}
+        id="foo"
+        x={val}
         y={0}
         color="#f00"
-        transition={{
-          x: { duration: 8, ease: 'linear', delay: 0 },
-          // y: { duration: 8, ease: 'linear', delay: 0 },
+        xTransition={{ duration: 8, ease: 'linear', delay: 0 }}
+        onTransitionStart={key => {
+          console.log('start transition', key, x)
+          debugger
+        }}
+        onTransitionEnd={key => {
+          console.log('end transition', key, x)
+          debugger
         }}
       />
+      {/*
+      <pixel x={-1} y={1} color="#aaa" />
+      <pixel x={7} y={1} color="#aaa" />
+      <pixel x={15} y={1} color="#aaa" />
+      <pixel x={23} y={1} color="#aaa" />
+      <pixel x={31} y={1} color="#aaa" />
+      */}
     </stage>
   )
 }

@@ -6,6 +6,7 @@ import {
   draw,
   Timer,
 } from '../utils'
+import * as easingUtils from 'easing-utils'
 
 /**
  * ----------------------------------------------------------------------------
@@ -194,6 +195,9 @@ const updateElement = (parent, element, node, nextNode) => {
  * Virtual DOM element base class
  */
 export class VirtualDOMElement {
+  static transitions = {
+    x: new WeakMap(),
+  }
   /**
    * Element type
    * @type {string}
@@ -204,16 +208,7 @@ export class VirtualDOMElement {
    * @type {VirtualDOMElement | void}
    */
   parent = null
-  /**
-   * Holds any transition timers
-   * @type {{ [key: string]: Timer }}
-   */
-  transitionTimers = {}
-  /**
-   * Holds any animation timers
-   * @type {{ [key: string]: Timer }}
-   */
-  animationTimers = {}
+
   /**
    * Set props, and append children
    * @param {Object} props - VNode props
@@ -242,18 +237,6 @@ export class VirtualDOMElement {
    */
   update() {
     const { onUpdate } = this.props
-    const animationTimers = Object.entries(this.animationTimers)
-    for (const [key, timer] of animationTimers) {
-      timer.next()
-      // console.log(Timer.format(+timer))
-    }
-    const transitionTimers = Object.entries(this.transitionTimers)
-    for (const [key, timer] of transitionTimers) {
-      timer.next()
-      // console.log(+timer)
-      if (timer * 100 >= 99.99) timer.off()
-      // console.log(Timer.format(+timer))
-    }
     if ('function' !== typeof onUpdate) return
     onUpdate()
   }
@@ -270,38 +253,51 @@ export class VirtualDOMElement {
    * @param {Object} nextProps - the incoming VNode props
    */
   setProps(nextProps) {
-    if (nextProps.transition) {
-      const transitions = Object.entries(nextProps.transition)
-      const prevTimers = this.transitionTimers
-      this.transitionTimers = nextProps.transition
-      for (const [key, options] of transitions) {
-        this.transitionTimers[key] = prevTimers[key]
-          ? prevTimers[key]
-          : new Timer(options).off()
-        if (this.props && this.props[key] !== nextProps[key]) {
-          this[`_${key}`] = this.props[key]
-          this.transitionTimers[key].on()
-        }
-      }
-    }
+    this.updateTransitions(this.props, nextProps)
     this.props = {
       ...this.props,
       ...nextProps,
     }
   }
-  getX() {
-    if (!this.transitionTimers.x) return this.props.x || 0
-    const xTimer = this.transitionTimers.x
-    const a = this.props.x || 0
-    const b = this._x || 0
-    const diff = a - b
-    return Math.round(b + xTimer * diff)
+  updateTransitions(props, nextProps) {
+    if (!props) return
+    const { x } = VirtualDOMElement.transitions
+    if (!nextProps.xTransition) return x.delete(this)
+    console.log(x.has(this))
+    const trans = x.has(this)
+      ? {
+          ...x.get(this),
+          ...nextProps.xTransition,
+        }
+      : {
+          from: props.x,
+          to: nextProps.x,
+          value: props.x,
+          progress: -1,
+          duration: 1,
+          ease: 'linear',
+          delay: 0,
+          wait: 0,
+          ...nextProps.xTransition,
+        }
+    trans.to = nextProps.x
+    console.log(trans)
+    x.set(this, trans)
+    if (trans.from === trans.to) return x.delete(this)
+    trans.progress++
+    const ease =
+      'function' === typeof trans.ease
+        ? trans.ease
+        : easingUtils[trans.ease] || (x => x)
+    const diff = trans.to - trans.from
+    trans.value = trans.from + diff * ease(1 / trans.duration * trans.progress)
+    console.log(trans)
+    debugger
+    x.set(this, trans)
   }
   getRelativeX() {
-    const parentX = this.parent ? this.parent.getRelativeX() : 0
-    const x = this.getX()
-    console.log(x)
-    return x + parentX
+    const { parent, props } = this
+    return props.x + (parent ? parent.getRelativeX() : 0) || 0
   }
   /**
    * Appends a child element and sets its parent prop
@@ -502,7 +498,6 @@ export const drawElement = ({ screen, hitmap, rootElement, element }) => {
       })
       break
     case 'pixel':
-      // console.log(element.getRelativeX())
       draw.rect({
         screen,
         hitmap,
