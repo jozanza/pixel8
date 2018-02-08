@@ -1,14 +1,5 @@
-import { linear, easeInSine, easeInOutCubic } from 'easing-utils'
-import { h, render, utils } from './src/index'
+import { h, render } from './src/index'
 // @jsx h
-
-const { Timer } = utils
-const timer = new Timer({
-  progress: 0,
-  duration: 8,
-  delay: 1,
-  reverse: true,
-})
 
 const getTransitionValue = (
   from,
@@ -28,32 +19,36 @@ const App = ({ frame }) => {
   // const x = n * 8
   const val = getTransitionValue(0, x, {
     progress: Math.min(8, Math.max(0, frame - 1)),
-    duration: 8
+    duration: 8,
   })
   console.log('frame:', frame, 'x:', val)
   return (
     <stage fps={2} width={32} height={32} scale={8} background="#000">
-      <pixel
-        id="foo"
-        x={val}
-        y={0}
-        color="#f00"
-        xTransition={{ duration: 8, ease: 'linear', delay: 0 }}
-        onTransitionStart={key => {
-          console.log('start transition', key, x)
-          debugger
-        }}
-        onTransitionEnd={key => {
-          console.log('end transition', key, x)
-          debugger
-        }}
-      />
+      <rect x={0} y={1} width={0} height={0} fill={0}>
+        <rect x={4} y={0} width={0} height={0} fill={0}>
+          <pixel
+            id="foo"
+            x={val}
+            y={0}
+            color="#f00"
+            xTransition={{ duration: 8, ease: 'linear', delay: 0 }}
+            onTransitionStart={key => {
+              console.log('start transition', key, x)
+              debugger
+            }}
+            onTransitionEnd={key => {
+              console.log('end transition', key, x)
+              debugger
+            }}
+          />
+        </rect>
+      </rect>
       {/*
-      <pixel x={-1} y={1} color="#aaa" />
-      <pixel x={7} y={1} color="#aaa" />
-      <pixel x={15} y={1} color="#aaa" />
-      <pixel x={23} y={1} color="#aaa" />
-      <pixel x={31} y={1} color="#aaa" />
+      <pixel x={0} y={1} color="#aaa" />
+      <pixel x={8} y={1} color="#aaa" />
+      <pixel x={16} y={1} color="#aaa" />
+      <pixel x={24} y={1} color="#aaa" />
+      <pixel x={32} y={1} color="#aaa" />
       */}
     </stage>
   )

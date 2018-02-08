@@ -195,9 +195,6 @@ const updateElement = (parent, element, node, nextNode) => {
  * Virtual DOM element base class
  */
 export class VirtualDOMElement {
-  static transitions = {
-    x: new WeakMap(),
-  }
   /**
    * Element type
    * @type {string}
@@ -253,51 +250,27 @@ export class VirtualDOMElement {
    * @param {Object} nextProps - the incoming VNode props
    */
   setProps(nextProps) {
-    this.updateTransitions(this.props, nextProps)
     this.props = {
       ...this.props,
       ...nextProps,
     }
   }
-  updateTransitions(props, nextProps) {
-    if (!props) return
-    const { x } = VirtualDOMElement.transitions
-    if (!nextProps.xTransition) return x.delete(this)
-    console.log(x.has(this))
-    const trans = x.has(this)
-      ? {
-          ...x.get(this),
-          ...nextProps.xTransition,
-        }
-      : {
-          from: props.x,
-          to: nextProps.x,
-          value: props.x,
-          progress: -1,
-          duration: 1,
-          ease: 'linear',
-          delay: 0,
-          wait: 0,
-          ...nextProps.xTransition,
-        }
-    trans.to = nextProps.x
-    console.log(trans)
-    x.set(this, trans)
-    if (trans.from === trans.to) return x.delete(this)
-    trans.progress++
-    const ease =
-      'function' === typeof trans.ease
-        ? trans.ease
-        : easingUtils[trans.ease] || (x => x)
-    const diff = trans.to - trans.from
-    trans.value = trans.from + diff * ease(1 / trans.duration * trans.progress)
-    console.log(trans)
-    debugger
-    x.set(this, trans)
-  }
-  getRelativeX() {
-    const { parent, props } = this
-    return props.x + (parent ? parent.getRelativeX() : 0) || 0
+  /**
+   * Maps over child props to apply relative positioning, etc
+   * @param {Object} props - child props object
+   */
+  mapChildProps(props) {
+    const hasRelativePosition = 'x' in this.props && 'y' in this.props
+    const map = this.parent ? this.parent.mapChildProps.bind(this.parent) : x => x
+    return map(
+      hasRelativePosition
+        ? {
+            ...props,
+            x: this.props.x + props.x,
+            y: this.props.y + props.y,
+          }
+        : props,
+    )
   }
   /**
    * Appends a child element and sets its parent prop
@@ -460,8 +433,9 @@ export const elementToImageData = (oldImageData, rootElement) => {
  */
 export const drawElement = ({ screen, hitmap, rootElement, element }) => {
   const { width, height } = rootElement.props
-  const parentProps = element.parent && element.parent.props
-  const { type, props, children, parent } = element
+  const { type, children, parent } = element
+  const parentProps = parent ? parent.props : {}
+  const props = parent ? parent.mapChildProps(element.props) : element.props
   switch (type) {
     case 'stage':
       // clear screen
@@ -475,8 +449,8 @@ export const drawElement = ({ screen, hitmap, rootElement, element }) => {
         hitmap,
         sw: width,
         sh: height,
-        x: (parentProps.x || 0) + (props.x || 0),
-        y: (parentProps.y || 0) + (props.y || 0),
+        x: props.x,
+        y: props.y,
         w: props.width || 0,
         h: props.height || 0,
         fill: toUint32(props.fill),
@@ -489,8 +463,8 @@ export const drawElement = ({ screen, hitmap, rootElement, element }) => {
         hitmap,
         sw: width,
         sh: height,
-        x: (parentProps.x || 0) + Math.round((props.x || 0) - 1),
-        y: (parentProps.y || 0) + Math.round((props.y || 0) - 1),
+        x: props.x,
+        y: props.y,
         w: Math.round(((props.radius || 0) + 1) * 2),
         h: Math.round(((props.radius || 0) + 1) * 2),
         fill: toUint32(props.fill),
@@ -503,8 +477,8 @@ export const drawElement = ({ screen, hitmap, rootElement, element }) => {
         hitmap,
         sw: width,
         sh: height,
-        x: element.getRelativeX(),
-        y: (parentProps.y || 0) + (props.y || 0),
+        x: props.x,
+        y: props.y,
         w: 1,
         h: 1,
         fill: toUint32(props.color),

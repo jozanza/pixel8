@@ -34,7 +34,36 @@ yarn add pixel8
 
 ## Usage
 
-You should definitely check out the **[interactive documentation](https://pixel8.vsmode.org/)**...but if you're looking for a quick start, the general idea is that you want to start off with something like this:
+You should definitely check out the **[interactive documentation](https://pixel8.vsmode.org/)**...but if you're looking for a quick start...
+
+### Option 1 - Vanilla
+
+pixel8 comes with it's own tiny vdom implementation, so it works out-of-the-box without any external libraries like React. If you want to take this approach, here's what it looks like:
+
+```js
+import { h, render } from 'pixel8'
+// @jsx h
+
+const App = ({ frame }) => {
+  return (
+    <stage fps={30} width={64} height={64} scale={6} background="#000">
+    {/*
+      * You can use the following components:
+      * <rect>, <circ>, <pixel>, <text>, <sprite>, <transition>, <animation> and <buffer>
+      * Read the API documentation at https://pixel8.vsmode.org/#drawing-shapes
+      */}
+    </stage>
+  )
+}
+
+// the #root element should be a HTMLCanvasElement
+render(App, document.getElementById('root'))
+
+```
+
+### Option 2 - React
+
+If you want to use pixel8 with React, that's cool too! The general idea is that you want to start off with something like this:
 
 ```js
 import React from 'react'
@@ -42,7 +71,7 @@ import { render } from 'react-dom'
 import { Stage } from 'pixel8'
 
 const App = () => (
-  <Stage width={64} height={64} scale={6} fps={30} background="#000">
+  <Stage fps={30} width={64} height={64} scale={6} background="#000">
     {/*
       * You can use the following components:
       * <rect>, <circ>, <pixel>, <text>, <sprite>, <transition>, <animation> and <buffer>
