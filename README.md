@@ -1,6 +1,6 @@
 
 <div align="center">
-  <img src="/assets/logo.png" />
+  <img src="/assets/logo.gif" />
   <h1>P I X E L 8</h1>  
 </div>
 
