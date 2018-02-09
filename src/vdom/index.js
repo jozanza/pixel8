@@ -270,14 +270,14 @@ export class VDOMElement {
    * @param {Object} child - child to map props of
    */
   mapChildProps(childProps, child) {
-    const { props } = this
-    return 'x' in props && 'y' in props
-      ? childProps
-      : {
-          ...childProps,
-          x: props.x + childProps.x,
-          y: props.y + childProps.y,
-        }
+    const props = this.parent.mapChildProps
+      ? this.parent.mapChildProps(this.props, this)
+      : this.props
+    return {
+      ...childProps,
+      x: props.x + childProps.x,
+      y: props.y + childProps.y,
+    }
   }
   /**
    * Appends a child element and sets its parent prop
@@ -407,7 +407,7 @@ export class Transition extends VDOMElement {
       ...this.nextProps.get(child),
     }
     // console.log(nextProps.x, nextProps.y)
-    return this.parent.mapChildProps(nextProps)
+    return nextProps //this.parent.mapChildProps(nextProps)
   }
 }
 
@@ -518,6 +518,7 @@ export const elementToImageData = (oldImageData, rootElement) => {
     hitmap: null,
     rootElement,
     element: rootElement,
+    mapChildProps: x => x,
   })
   return imageData
 }
@@ -532,14 +533,11 @@ export const elementToImageData = (oldImageData, rootElement) => {
 export const drawElement = ({ screen, hitmap, rootElement, element }) => {
   const { width, height } = rootElement.props
   const { type, children, parent } = element
-  const parentProps = parent ? parent.props : {}
   // compute final child props by applying parent mapping functions
-  let props = element.props
-  let p = parent
-  while (p && p.mapChildProps) {
-    props = p.mapChildProps(props, element)
-    p = p.parent
-  }
+  const props =
+    element.parent && element.parent.mapChildProps
+      ? element.parent.mapChildProps(element.props, element)
+      : element.props
   switch (type) {
     case 'stage':
       // clear screen
@@ -558,7 +556,7 @@ export const drawElement = ({ screen, hitmap, rootElement, element }) => {
         w: props.width || 0,
         h: props.height || 0,
         fill: toUint32(props.fill),
-        radius: props.radius || 0,
+        radius: props.br || 0,
       })
       break
     case 'circ':

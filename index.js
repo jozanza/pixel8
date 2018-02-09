@@ -9,10 +9,10 @@ const App = ({ frame }) => {
   // console.log(Math.round(radius))
   console.log('frame:', frame, 'n:', n)
   return (
-    <stage fps={2} width={64} height={64} scale={4} background="#000">
+    <stage fps={10} width={64} height={64} scale={4} background="#000">
       <circ radius={radius} x={32} y={32} fill="#f0f" />
-      <rect x={0} y={1} width={0} height={0} fill={0}>
-        <rect x={4} y={0} width={0} height={0} fill={0}>
+      <rect x={4} y={1} width={8} height={1} fill="#fff">
+        <rect x={0} y={1} width={8} height={1} fill="#ccc">
           <transition props="x,y" duration={8} ease="linear">
             <rect
               x={n}
@@ -28,7 +28,40 @@ const App = ({ frame }) => {
                 console.log('end transition', frame, key, n)
                 // debugger
               }}
-            />
+            >
+              <rect
+                x={0}
+                y={1}
+                height={4}
+                width={4}
+                fill="#0ca"
+                onTransitionStart={key => {
+                  console.log('start transition', frame, key, n)
+                  // debugger
+                }}
+                onTransitionEnd={key => {
+                  console.log('end transition', frame, key, n)
+                  // debugger
+                }}
+              >
+                <rect
+                  x={1}
+                  y={1}
+                  height={8}
+                  width={8}
+                  br={1}
+                  fill="#00f"
+                  onTransitionStart={key => {
+                    console.log('start transition', frame, key, n)
+                    // debugger
+                  }}
+                  onTransitionEnd={key => {
+                    console.log('end transition', frame, key, n)
+                    // debugger
+                  }}
+                />
+              </rect>
+            </rect>
           </transition>
         </rect>
       </rect>
