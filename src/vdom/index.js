@@ -96,11 +96,11 @@ export const nothing = props => ({ type: 'nothing', props, children: [] })
  */
 
 /**
- * Given a VNode, returns a VirtualDOMElement
+ * Given a VNode, returns a VDOMElement
  * @param {string} type - VNode type
  * @param {Object} props - VNode props
  * @param {Array<VNode>} children - array of VNodes
- * @return {VirtualDOMElement}
+ * @return {VDOMElement}
  */
 export const createElement = ({ type, props, children }) => {
   switch (type) {
@@ -112,6 +112,8 @@ export const createElement = ({ type, props, children }) => {
       return new Circ(props, children)
     case 'pixel':
       return new Pixel(props, children)
+    case 'transition':
+      return new Transition(props, children)
     case 'list':
       return new List(props, children)
     case 'nothing':
@@ -122,10 +124,10 @@ export const createElement = ({ type, props, children }) => {
 }
 
 /**
- * Applies updates to a VirtualDOMElement and its children
+ * Applies updates to a VDOMElement and its children
  * It does so by diffing an element's current vnode with its next
- * @param {VirtualDOMElement} [parent] - the parent element
- * @param {VirtualDOMElement} [element] - the element being updated
+ * @param {VDOMElement} [parent] - the parent element
+ * @param {VDOMElement} [element] - the element being updated
  * @param {VNode} [node] - the current VNode for the element
  * @param {VNode} [nextNode] - the next VNode for the element
  */
@@ -194,24 +196,24 @@ const updateElement = (parent, element, node, nextNode) => {
 /**
  * Virtual DOM element base class
  */
-export class VirtualDOMElement {
+export class VDOMElement {
   /**
    * Element type
    * @type {string}
    */
-  type = ''
+  type = 'VDOMElement'
   /**
    * Parent element
-   * @type {VirtualDOMElement | void}
+   * @type {VDOMElement | void}
    */
   parent = null
-
   /**
    * Set props, and append children
    * @param {Object} props - VNode props
    * @param {Array<VNode>} children - direct child VNodes
    */
   constructor(props = {}, children = []) {
+    this.transitionCallbackQueue = []
     this.setProps(props)
     this.children = new Set()
     // initialze element
@@ -254,27 +256,32 @@ export class VirtualDOMElement {
       ...this.props,
       ...nextProps,
     }
+    // transition callback queue...
+    // might be better to invoke parent.childDidUpdate() method or something
+    for (const { name, args } of this.transitionCallbackQueue) {
+      const f = this.props[name]
+      if (f) f(...args)
+    }
+    this.transitionCallbackQueue = []
   }
   /**
    * Maps over child props to apply relative positioning, etc
-   * @param {Object} props - child props object
+   * @param {Object} childProps - the props object being mapped
+   * @param {Object} child - child to map props of
    */
-  mapChildProps(props) {
-    const hasRelativePosition = 'x' in this.props && 'y' in this.props
-    const map = this.parent ? this.parent.mapChildProps.bind(this.parent) : x => x
-    return map(
-      hasRelativePosition
-        ? {
-            ...props,
-            x: this.props.x + props.x,
-            y: this.props.y + props.y,
-          }
-        : props,
-    )
+  mapChildProps(childProps, child) {
+    const { props } = this
+    return 'x' in props && 'y' in props
+      ? childProps
+      : {
+          ...childProps,
+          x: props.x + childProps.x,
+          y: props.y + childProps.y,
+        }
   }
   /**
    * Appends a child element and sets its parent prop
-   * @param {VirtualDOMElement} child - child virtual DOM element
+   * @param {VDOMElement} child - child virtual DOM element
    */
   appendChild(child) {
     this.children.add(child)
@@ -283,7 +290,7 @@ export class VirtualDOMElement {
   }
   /**
    * Removes a child element and unsets its parent prop
-   * @param {VirtualDOMElement} child - child virtual DOM element
+   * @param {VDOMElement} child - child virtual DOM element
    */
   removeChild(child) {
     this.children.delete(child)
@@ -294,32 +301,123 @@ export class VirtualDOMElement {
 }
 
 /** Virtual DOM element representing the root of the UI */
-export class Stage extends VirtualDOMElement {
+export class Stage extends VDOMElement {
   type = 'stage'
+  mapChildProps = null
 }
 
 /** Virtual DOM element representing a rectangle */
-export class Rect extends VirtualDOMElement {
+export class Rect extends VDOMElement {
   type = 'rect'
 }
 
 /** Virtual DOM element representing a circle */
-export class Circ extends VirtualDOMElement {
+export class Circ extends VDOMElement {
   type = 'circ'
 }
 
 /** Virtual DOM element representing a pixel */
-export class Pixel extends VirtualDOMElement {
+export class Pixel extends VDOMElement {
   type = 'pixel'
 }
 
+/** Virtual DOM element representing a nothing */
+export class Transition extends VDOMElement {
+  type = 'transition'
+  transitions = new WeakMap()
+  nextProps = new WeakMap()
+  getTransitionValue(child, key) {
+    const { from, to, progress, wait } = this.transitions.get(child)[key]
+    const { duration = 1, ease, delay = 0 } = this.props
+    const step = 1 / duration
+    const easeFn =
+      'function' === typeof ease ? ease : easingUtils[ease] || (x => x)
+    const t = easeFn(step * progress)
+    const diff = to - from
+    const val = Math.round(diff * t)
+    // console.log(from, to)
+    return from + val
+  }
+  update() {
+    const transitionProps = this.props.props
+      .split(',')
+      .map(x => x.trim())
+      .filter(x => x)
+    for (const child of this.children) {
+      if (!this.transitions.has(child)) this.transitions.set(child, {})
+      const transitions = this.transitions.get(child)
+      const nextProps = {}
+      const { props } = child
+      for (const key of transitionProps) {
+        this.updateChildTransitionKeys(child, key, transitions)
+        nextProps[key] = this.getTransitionValue(child, key)
+        // console.log(transitions[key])
+        // console.log(this.getTransitionValue(child, key))
+      }
+      this.nextProps.set(child, nextProps)
+    }
+  }
+  updateChildTransitionKeys(child, key, transitions) {
+    const { from, to, progress, wait } = transitions[key] || {}
+    const nextValue = child.props[key]
+    const done = progress === this.props.duration && to === nextValue
+    const sameTarget = to === nextValue
+    if (done || !transitions[key]) {
+      // console.log(from, nextValue)
+      // reset
+      transitions[key] = {
+        progress: 0,
+        wait: this.props.delay,
+        from: nextValue,
+        to: nextValue,
+      }
+    } else if (from !== nextValue) {
+      // decrement wait, increment progress, update from/to
+      // is target value has changed, reset progress/wait
+      transitions[key] = {
+        // increment progress once wait is 0
+        progress: wait < 1 ? (sameTarget ? progress + 1 : 0) : 1,
+        // decrement wait by one, floor is 0
+        wait: wait > 0 ? (sameTarget ? wait - 1 : this.props.delay) : 0,
+        // if nextValue has changed, change "from" to current transition value
+        from: sameTarget ? from : this.nextProps.get(child)[key],
+        // we should always transition to nextValue
+        to: nextValue,
+      }
+      // push transition callback prop execution into queue...
+      // can't call at this moment since the child still has last frame's props
+      // ...setProps() has yet to be called transition children this frame
+      if (progress === 0) {
+        child.transitionCallbackQueue.push({
+          name: 'onTransitionStart',
+          args: [key],
+        })
+      }
+      if (sameTarget && progress === this.props.duration - 1) {
+        child.transitionCallbackQueue.push({
+          name: 'onTransitionEnd',
+          args: [key],
+        })
+      }
+    }
+  }
+  mapChildProps(props, child) {
+    const nextProps = {
+      ...props,
+      ...this.nextProps.get(child),
+    }
+    // console.log(nextProps.x, nextProps.y)
+    return this.parent.mapChildProps(nextProps)
+  }
+}
+
 /** Virtual DOM element representing a list of virual DOM elements */
-export class List extends VirtualDOMElement {
+export class List extends VDOMElement {
   type = 'list'
 }
 
 /** Virtual DOM element representing a nothing */
-export class Nothing extends VirtualDOMElement {
+export class Nothing extends VDOMElement {
   type = 'nothing'
 }
 
@@ -330,7 +428,7 @@ export class Nothing extends VirtualDOMElement {
  */
 
 /**
- * Converts VNodes -> VirtualDOMElements -> ImageData, and possibly dumps the
+ * Converts VNodes -> VDOMElements -> ImageData, and possibly dumps the
  * the pixels onto a <canvas> element...and it repeats all that once per frame
  * @param {VNode | Function} view - A VNode or function that returns a VNode.
  *                                  VNode type must be 'stage'
@@ -398,9 +496,9 @@ export const autoCancelRender = (() => {
 })()
 
 /**
- * Converts a VirtualDOMElement and its children into ImageData
+ * Converts a VDOMElement and its children into ImageData
  * @param {ImageData} [oldImageData] - previous ImageData, if any
- * @param {VirtualDOMElement} rootElement - the element to draw
+ * @param {VDOMElement} rootElement - the element to draw
  * @return {ImageData}
  */
 export const elementToImageData = (oldImageData, rootElement) => {
@@ -428,14 +526,20 @@ export const elementToImageData = (oldImageData, rootElement) => {
  * Writes virtual DOM element pixels onto screen/hitmap buffers
  * @param {Uint32Array} screen - screen buffer view
  * @param {Uint32Array} hitmap - hitmap buffer view
- * @param {VirtualDOMElement} rootElement - the root VirtualDOMElement
- * @param {VirtualDOMElement} element - the VirtualDOMElement to be drawn
+ * @param {VDOMElement} rootElement - the root VDOMElement
+ * @param {VDOMElement} element - the VDOMElement to be drawn
  */
 export const drawElement = ({ screen, hitmap, rootElement, element }) => {
   const { width, height } = rootElement.props
   const { type, children, parent } = element
   const parentProps = parent ? parent.props : {}
-  const props = parent ? parent.mapChildProps(element.props) : element.props
+  // compute final child props by applying parent mapping functions
+  let props = element.props
+  let p = parent
+  while (p && p.mapChildProps) {
+    props = p.mapChildProps(props, element)
+    p = p.parent
+  }
   switch (type) {
     case 'stage':
       // clear screen
