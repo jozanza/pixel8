@@ -148,6 +148,9 @@ const updateElement = (parent, element, node, nextNode) => {
   if (node && node.type === nextNode.type) {
     // update props & state
     element.setProps(nextNode.props)
+    if (parent && typeof parent.childSetProps === 'function') {
+      parent.childSetProps(element)
+    }
     // element.update()
     if (element.type === 'list') {
       // updateElement based on keys
@@ -213,7 +216,6 @@ export class VDOMElement {
    * @param {Array<VNode>} children - direct child VNodes
    */
   constructor(props = {}, children = []) {
-    this.transitionCallbackQueue = []
     this.setProps(props)
     this.children = new Set()
     // initialze element
@@ -256,13 +258,6 @@ export class VDOMElement {
       ...this.props,
       ...nextProps,
     }
-    // transition callback queue...
-    // might be better to invoke parent.childDidUpdate() method or something
-    for (const { name, args } of this.transitionCallbackQueue) {
-      const f = this.props[name]
-      if (f) f(...args)
-    }
-    this.transitionCallbackQueue = []
   }
   /**
    * Maps over child props to apply relative positioning, etc
@@ -270,9 +265,7 @@ export class VDOMElement {
    * @param {Object} child - child to map props of
    */
   mapChildProps(childProps, child) {
-    const props = this.parent.mapChildProps
-      ? this.parent.mapChildProps(this.props, this)
-      : this.props
+    const props = this.parent.mapChildProps(this.props, this)
     return {
       ...childProps,
       x: props.x + childProps.x,
@@ -303,7 +296,9 @@ export class VDOMElement {
 /** Virtual DOM element representing the root of the UI */
 export class Stage extends VDOMElement {
   type = 'stage'
-  mapChildProps = null
+  mapChildProps(childProps) {
+    return childProps
+  }
 }
 
 /** Virtual DOM element representing a rectangle */
@@ -326,61 +321,66 @@ export class Transition extends VDOMElement {
   type = 'transition'
   transitions = new WeakMap()
   nextProps = new WeakMap()
-  getTransitionValue(child, key) {
-    const { from, to, progress, wait } = this.transitions.get(child)[key]
-    const { duration = 1, ease, delay = 0 } = this.props
+  childCallbackQueue = new WeakMap()
+  getTransitionValue(
+    child,
+    { prop, duration = 1, ease = 'linear', delay = 0, apply },
+  ) {
+    const { from, to, progress, wait } = this.transitions.get(child)[prop]
     const step = 1 / duration
     const easeFn =
       'function' === typeof ease ? ease : easingUtils[ease] || (x => x)
     const t = easeFn(step * progress)
-    const diff = to - from
-    const val = Math.round(diff * t)
+    const applyFn =
+      apply ||
+      ((t, from, to) => {
+        const diff = to - from
+        const val = Math.round(diff * t)
+        return from + val
+      })
     // console.log(from, to)
-    return from + val
+    return applyFn(t, from, to)
   }
   update() {
-    const transitionProps = this.props.props
-      .split(',')
-      .map(x => x.trim())
-      .filter(x => x)
+    const { values } = this.props
     for (const child of this.children) {
       if (!this.transitions.has(child)) this.transitions.set(child, {})
       const transitions = this.transitions.get(child)
       const nextProps = {}
       const { props } = child
-      for (const key of transitionProps) {
-        this.updateChildTransitionKeys(child, key, transitions)
-        nextProps[key] = this.getTransitionValue(child, key)
+      for (const value of values) {
+        this.updateChildTransitionKeys(child, value, transitions)
+        nextProps[value.prop] = this.getTransitionValue(child, value)
         // console.log(transitions[key])
         // console.log(this.getTransitionValue(child, key))
       }
       this.nextProps.set(child, nextProps)
     }
   }
-  updateChildTransitionKeys(child, key, transitions) {
-    const { from, to, progress, wait } = transitions[key] || {}
-    const nextValue = child.props[key]
-    const done = progress === this.props.duration && to === nextValue
+  updateChildTransitionKeys(child, { prop, duration, delay }, transitions) {
+    const { from, to, progress, wait } = transitions[prop] || {}
+    const nextValue = child.props[prop]
+    const done = progress === duration && to === nextValue
     const sameTarget = to === nextValue
-    if (done || !transitions[key]) {
+    if (done || !transitions[prop]) {
       // console.log(from, nextValue)
       // reset
-      transitions[key] = {
+      transitions[prop] = {
         progress: 0,
-        wait: this.props.delay,
+        wait: delay,
         from: nextValue,
         to: nextValue,
       }
     } else if (from !== nextValue) {
       // decrement wait, increment progress, update from/to
       // is target value has changed, reset progress/wait
-      transitions[key] = {
+      transitions[prop] = {
         // increment progress once wait is 0
         progress: wait < 1 ? (sameTarget ? progress + 1 : 0) : 1,
         // decrement wait by one, floor is 0
-        wait: wait > 0 ? (sameTarget ? wait - 1 : this.props.delay) : 0,
+        wait: wait > 0 ? (sameTarget ? wait - 1 : delay) : 0,
         // if nextValue has changed, change "from" to current transition value
-        from: sameTarget ? from : this.nextProps.get(child)[key],
+        from: sameTarget ? from : this.nextProps.get(child)[prop],
         // we should always transition to nextValue
         to: nextValue,
       }
@@ -388,18 +388,31 @@ export class Transition extends VDOMElement {
       // can't call at this moment since the child still has last frame's props
       // ...setProps() has yet to be called transition children this frame
       if (progress === 0) {
-        child.transitionCallbackQueue.push({
+        const queue = this.childCallbackQueue.get(child) || []
+        queue.push({
           name: 'onTransitionStart',
-          args: [key],
+          args: [prop],
         })
+        this.childCallbackQueue.set(child, queue)
       }
-      if (sameTarget && progress === this.props.duration - 1) {
-        child.transitionCallbackQueue.push({
+      if (sameTarget && progress === duration - 1) {
+        const queue = this.childCallbackQueue.get(child) || []
+        queue.push({
           name: 'onTransitionEnd',
-          args: [key],
+          args: [prop],
         })
+        this.childCallbackQueue.set(child, queue)
       }
     }
+  }
+  childSetProps(child) {
+    const queue = this.childCallbackQueue.get(child) || []
+    // transition callback queue...
+    for (const { name, args } of queue) {
+      const f = child.props[name]
+      if (f) f(...args)
+    }
+    this.childCallbackQueue.set(child, [])
   }
   mapChildProps(props, child) {
     const nextProps = {
