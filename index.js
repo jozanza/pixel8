@@ -12,7 +12,7 @@ const App = ({ frame }) => {
     <stage fps={10} width={64} height={64} scale={4} background="#000">
       <circ radius={radius} x={32} y={32} fill="#f0f" />
       <rect x={4} y={1} width={8} height={1} fill="#fff">
-        <rect x={0} y={1} width={8} height={1} fill="#ccc">
+        <rect x={0} y={10} width={8} height={1} fill="#ccc">
           <transition
             values={[
               { prop: 'x', duration: 8, ease: 'linear' },

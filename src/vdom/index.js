@@ -265,6 +265,7 @@ export class VDOMElement {
    * @param {Object} child - child to map props of
    */
   mapChildProps(childProps, child) {
+    if (childProps.position === 'fixed') return childProps
     const props = this.parent.mapChildProps(this.props, this)
     return {
       ...childProps,
@@ -344,12 +345,10 @@ export class Transition extends VDOMElement {
   update() {
     const { values } = this.props
     for (const child of this.children) {
-      if (!this.transitions.has(child)) this.transitions.set(child, {})
-      const transitions = this.transitions.get(child)
       const nextProps = {}
       const { props } = child
       for (const value of values) {
-        this.updateChildTransitionKeys(child, value, transitions)
+        this.updateChildTransitionKeys(child, value)
         nextProps[value.prop] = this.getTransitionValue(child, value)
         // console.log(transitions[key])
         // console.log(this.getTransitionValue(child, key))
@@ -357,7 +356,9 @@ export class Transition extends VDOMElement {
       this.nextProps.set(child, nextProps)
     }
   }
-  updateChildTransitionKeys(child, { prop, duration, delay }, transitions) {
+  updateChildTransitionKeys(child, { prop, duration, delay }) {
+    if (!this.transitions.has(child)) this.transitions.set(child, {})
+    const transitions = this.transitions.get(child)
     const { from, to, progress, wait } = transitions[prop] || {}
     const nextValue = child.props[prop]
     const done = progress === duration && to === nextValue
@@ -410,7 +411,7 @@ export class Transition extends VDOMElement {
     // transition callback queue...
     for (const { name, args } of queue) {
       const f = child.props[name]
-      if (f) f(...args)
+      if (typeof f === 'function') f(...args)
     }
     this.childCallbackQueue.set(child, [])
   }
@@ -420,7 +421,7 @@ export class Transition extends VDOMElement {
       ...this.nextProps.get(child),
     }
     // console.log(nextProps.x, nextProps.y)
-    return nextProps //this.parent.mapChildProps(nextProps)
+    return this.parent.mapChildProps(nextProps)
   }
 }
 
