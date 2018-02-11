@@ -38,6 +38,7 @@ type VNodeFn = (type: string, props: Object) => VNode
  * @return {VNode}
  */
 export const h = (type, props = {}, ...children) => {
+  // console.log(type, props, children)
   return typeof type === 'function'
     ? type(props, children)
     : {
@@ -61,7 +62,9 @@ export const mapChildNode = (child, key) => {
     ? nothing(props)
     : Array.isArray(child)
       ? list(props, child)
-      : { ...child, props: { ...child.props, ...props } }
+      : 'function' === typeof child
+        ? { type: 'callback', props: { key, render: child }, children: [] }
+        : { ...child, props: { ...child.props, ...props } }
 }
 
 /**
@@ -103,6 +106,7 @@ export const nothing = props => ({ type: 'nothing', props, children: [] })
  * @return {VDOMElement}
  */
 export const createElement = ({ type, props, children }) => {
+  // console.log(type, props, children)
   switch (type) {
     case 'stage':
       return new Stage(props, children)
@@ -114,6 +118,8 @@ export const createElement = ({ type, props, children }) => {
       return new Pixel(props, children)
     case 'transition':
       return new Transition(props, children)
+    case 'callback':
+      return new Callback(props, children)
     case 'list':
       return new List(props, children)
     case 'nothing':
@@ -152,7 +158,16 @@ const updateElement = (parent, element, node, nextNode) => {
       parent.childSetProps(element)
     }
     // element.update()
-    if (element.type === 'list') {
+    if (element.type === 'callback') {
+      // callbacks have a single child created by props.render() each frame
+      const [childElement] = [...element.children]
+      updateElement(
+        element, // parent
+        childElement, // element
+        element.lastNode, // node
+        element.node, // nextNode
+      )
+    } else if (element.type === 'list') {
       // updateElement based on keys
       const extra = new Set(element.children)
       const elements = {}
@@ -229,9 +244,9 @@ export class VDOMElement {
    * Called when element is created
    */
   init() {
-    const { onCreate } = this.props
-    if ('function' !== typeof onCreate) return
-    onCreate()
+    const { onInit } = this.props
+    if ('function' !== typeof onInit) return
+    onInit()
   }
   /**
    * Called when element is updated
@@ -317,7 +332,7 @@ export class Pixel extends VDOMElement {
   type = 'pixel'
 }
 
-/** Virtual DOM element representing a nothing */
+/** Virtual DOM element representing a transition */
 export class Transition extends VDOMElement {
   type = 'transition'
   transitions = new WeakMap()
@@ -332,6 +347,7 @@ export class Transition extends VDOMElement {
     const easeFn =
       'function' === typeof ease ? ease : easingUtils[ease] || (x => x)
     const t = easeFn(step * progress)
+    // An apply fn is useful for color transitions, etc
     const applyFn =
       apply ||
       ((t, from, to) => {
@@ -348,6 +364,11 @@ export class Transition extends VDOMElement {
       const nextProps = {}
       const { props } = child
       for (const value of values) {
+        // @note
+        // Auto transitionable: x, y, width, height, br, radius
+        // other primitive props require a custom 'apply' function
+        // object props are tricky...probably need an 'equals' function
+        // to detect when the from/to values are actually different
         this.updateChildTransitionKeys(child, value)
         nextProps[value.prop] = this.getTransitionValue(child, value)
         // console.log(transitions[key])
@@ -421,13 +442,32 @@ export class Transition extends VDOMElement {
       ...this.nextProps.get(child),
     }
     // console.log(nextProps.x, nextProps.y)
-    return this.parent.mapChildProps(nextProps)
+    return this.parent.mapChildProps(nextProps, child)
+  }
+}
+
+/** Virtual DOM element representing a callback function */
+export class Callback extends VDOMElement {
+  type = 'callback'
+  ctx = { frame: 0 }
+  node = null
+  lastNode = null
+  update() {
+    this.lastNode = this.node
+    this.node = this.props.render(this.ctx)
+    this.ctx.frame++
+  }
+  mapChildProps(childProps, child) {
+    return this.parent.mapChildProps(childProps, child)
   }
 }
 
 /** Virtual DOM element representing a list of virual DOM elements */
 export class List extends VDOMElement {
   type = 'list'
+  mapChildProps(childProps, child) {
+    return this.parent.mapChildProps(childProps, child)
+  }
 }
 
 /** Virtual DOM element representing a nothing */
@@ -468,11 +508,7 @@ export const render = (view, canvas, ctx = {}) => {
   )
   ctx.lastNode = stage
   // update UI
-  ctx.imageData = elementToImageData(
-    ctx.imageData,
-    ctx.rootElement,
-    ctx.rootElement,
-  )
+  updateScreenAndHitmap(ctx)
   if (canvas) {
     // if canvas element specified, write imageData to it
     canvas.width = width
@@ -481,7 +517,7 @@ export const render = (view, canvas, ctx = {}) => {
     canvas.style.transform = `scale(${scale})`
     canvas.style.transformOrigin = '0 0'
     canvas.style.background = background
-    canvas.getContext('2d').putImageData(ctx.imageData, 0, 0)
+    canvas.getContext('2d').putImageData(ctx.screen, 0, 0)
   }
   // repeat :)
   ctx.timer = ctx.next(() => render(view, canvas, ctx), 1 / fps * 1000)
@@ -510,31 +546,30 @@ export const autoCancelRender = (() => {
 })()
 
 /**
- * Converts a VDOMElement and its children into ImageData
- * @param {ImageData} [oldImageData] - previous ImageData, if any
+ * Draws elements into screen and hitmap ImageData
+ * @param {Object} ctx - a render context object
+ * @param {ImageData} [screen] - screen ImageData
+ * @param {ImageData} [hitmap] - hitmap ImageData
  * @param {VDOMElement} rootElement - the element to draw
- * @return {ImageData}
  */
-export const elementToImageData = (oldImageData, rootElement) => {
-  const { width, height } = rootElement.props
-  let imageData = oldImageData
-  const noData = !imageData
-  const didResize =
-    noData || (imageData.width !== width || imageData.height !== height)
-  // reset imageData
-  if (didResize) imageData = new ImageData(width, height)
-  // create buffer view
-  const { buffer } = imageData.data
-  const screen = new Uint32Array(buffer)
-  // draw nodes into buffer
+export const updateScreenAndHitmap = ctx => {
+  const { width, height } = ctx.rootElement.props
+  const noData = !ctx.screen
+  const widthChanged = ctx.screen && ctx.screen.width !== width
+  const heightChanged = ctx.screen && ctx.screen.height !== height
+  const shouldReset = noData || widthChanged || heightChanged
+  // reset screenData
+  if (shouldReset) {
+    ctx.screen = new ImageData(width, height)
+    ctx.hitmap = new ImageData(width, height)
+  }
+  // draw elements into screen + hitmap
   drawElement({
-    screen,
-    hitmap: null,
-    rootElement,
-    element: rootElement,
-    mapChildProps: x => x,
+    screen: new Uint32Array(ctx.screen.data.buffer),
+    hitmap: new Uint32Array(ctx.hitmap.data.buffer),
+    rootElement: ctx.rootElement,
+    element: ctx.rootElement,
   })
-  return imageData
 }
 
 /**
@@ -579,8 +614,8 @@ export const drawElement = ({ screen, hitmap, rootElement, element }) => {
         hitmap,
         sw: width,
         sh: height,
-        x: props.x,
-        y: props.y,
+        x: props.x - 1,
+        y: props.y - 1,
         w: Math.round(((props.radius || 0) + 1) * 2),
         h: Math.round(((props.radius || 0) + 1) * 2),
         fill: toUint32(props.fill),

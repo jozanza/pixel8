@@ -1,4 +1,5 @@
 import * as easingUtils from 'easing-utils'
+import wrap from 'word-wrapper'
 
 export const {
   // ImageData polyfill for node
@@ -20,87 +21,6 @@ export const {
     },
   },
 } = window
-
-export class Timer {
-  static forwards = 1
-  static backwards = -1
-  static format(t) {
-    return (t * 100).toFixed(2) + '%'
-  }
-  constructor({
-    progress = 0,
-    duration = 1,
-    delay = 0,
-    iterations = Infinity,
-    reverse = false,
-    ease = 'linear',
-  } = {}) {
-    this.direction = Timer.forwards
-    this.iterations = iterations
-    this.reverse = reverse
-    this.duration = duration
-    this.delay = delay
-    this.wait = delay
-    this.progress = progress
-    this.step = 1 / duration
-    this.ease = ease
-  }
-  next() {
-    if (this.disabled) return
-    if (this.wait > 0) this.wait--
-    else if (this.direction === Timer.forwards) {
-      this.progress += this.step
-      if (this.progress >= 1) {
-        if (this.reverse) {
-          this.direction = Timer.backwards
-          this.reset()
-          if (this.delay === 0) this.progress -= this.step
-          else {
-            this.wait--
-          }
-        } else {
-          this.reset()
-        }
-      }
-    } else if (this.direction === Timer.backwards) {
-      this.progress -= this.step
-      if (this.progress <= 0) {
-        if (this.reverse) {
-          this.direction = Timer.forwards
-          this.reset()
-          if (this.delay === 0) this.progress += this.step
-          else {
-            this.wait--
-          }
-        } else {
-          this.reset()
-        }
-      }
-    }
-  }
-  on() {
-    this.disabled = false
-    return this
-  }
-  off() {
-    this.disabled = true
-    return this
-  }
-  reset() {
-    this.wait = this.delay
-    this.progress = this.direction === Timer.forwards ? 0 : 1
-  }
-  toString() {
-    return Timer.format(this.progress)
-  }
-  valueOf() {
-    const f = easingUtils[this.ease]
-    return f ? f(this.progress) : this.progress
-  }
-  [Symbol.toPrimitive](hint) {
-    return hint == 'number' ? this.valueOf() : this.toString()
-  }
-}
 
 export const requestTimeout = (f, delay) => {
   const start = performance.now()
@@ -134,10 +54,10 @@ export const requestInterval = (f, delay) => {
 export const clearTimer = ({ value }) => cancelAnimationFrame(value)
 
 export const draw = {
-  rect({ screen, hitmap, sw, sh, x, y, w, h, fill, radius }) {
+  rect({ screen, hitmap, sw, sh, x, y, w, h, fill, radius, blend }) {
     // skip totally transparent fills
     // @todo - skip fills where only the alpha channel is 0
-    if (fill === 0) return
+    if (uint32IsTransparent(fill)) return
     // calculate coordinates to skip due to border-radius
     // secret bonus: also useful for drawing circles
     const skips = calcBorderRadiusSkips(w, h, radius)
@@ -155,7 +75,10 @@ export const draw = {
         // pixel index
         const idx = _y * sw + _x
         // write visible pixels to uint32 array
-        screen[idx] = fill
+        screen[idx] =
+          (blend && blend(fill, screen[idx])) || uint32IsOpaque(fill)
+            ? fill
+            : compositeUint32(fill, screen[idx])
         // write id to hitmap
         // hitmap[idx] = id
       }
@@ -223,9 +146,16 @@ export const drawUint32 = (
 }
 
 // hypotenuse, side => other side
-export const chord = (a, b) => Math.sqrt(Math.pow(a, 2) + -Math.pow(b, 2)) * 2
+export const chord = (cache => (a, b) => {
+  const key = `${[a, b]}`
+  if (key in cache) return cache[key]
+  cache[key] = Math.sqrt(Math.pow(a, 2) + -Math.pow(b, 2)) * 2
+  return cache[key]
+})({})
 
-export const calcBorderRadiusSkips = (w, h, br) => {
+export const calcBorderRadiusSkips = (cache => (w, h, br) => {
+  const key = `${[w, h, br]}`
+  if (key in cache) return cache[key]
   let i = br
   const skips = []
   while (i) {
@@ -234,32 +164,35 @@ export const calcBorderRadiusSkips = (w, h, br) => {
     skips[br - (i + 1)] = xs
     skips[h - (br - i)] = xs
   }
-  return skips
-}
+  cache[key] = skips
+  return cache[key]
+})({})
 
-export const fromHex = hex => {
+export const fromHex = (cache => hex => {
+  if (hex in cache) return cache[hex]
+  const isBigEndian = false // @todo: endianness detection
   const len = hex.length - 1
   let str = ''
   if (len === 3) {
     for (const x of hex.substr(1)) {
-      // little-endian
-      str = x.repeat(2) + str
-      // big-endian
-      // str += x.repeat(2)
+      str = isBigEndian ? '???' : x.repeat(2) + str
     }
   } else {
     for (let i = len - 1; i > 0; i -= 2) {
-      // little-endian
-      str += hex[i] + hex[i + 1]
-      // big-endian
-      // str = hex[i] + hex[i + 1] + str
+      if (isBigEndian) {
+        // ? -> str = hex[i] + hex[i + 1] + str
+      } else {
+        str += hex[i] + hex[i + 1]
+      }
     }
   }
   str = 'ff' + str.substr(0, 6)
-  return parseInt(str, 16)
-}
+  cache[hex] = parseInt(str, 16)
+  return cache[hex]
+})({})
 
-export const fromRGBA = rgba => {
+export const rgbaStringToUint32 = (cache => rgba => {
+  if (rgba in cache) return cache[rgba]
   const [red, green, blue, alpha = 1] = rgba
     .split('(')[1]
     .split(')')[0]
@@ -269,16 +202,80 @@ export const fromRGBA = rgba => {
   const b = blue & 0xff
   const g = green & 0xff
   const r = red & 0xff
-  return toABGR(r, g, b, a)
-}
+  cache[rgba] = rgbaToUint32(r, g, b, a)
+  return cache[rgba]
+})({})
 
-export const modulo = (a, b) => a - Math.floor(a / b) * b
+export const modulo = (cache => (a, b) => {
+  const key = `${[a, b]}`
+  if (key in cache) return cache[key]
+  cache[key] = a - Math.floor(a / b) * b
+  return cache[key]
+})({})
 
-// for big-endian
-export const toRGBA = (r, g, b, a) => (r << 24) | (g << 16) | (b << 8) | a
+export const rgbaToUint32 = (cache => (r, g, b, a) => {
+  const key = `${[r, g, b, a]}`
+  if (key in cache) return cache[key]
+  const isBigEndian = false // @todo: endianness detection
+  cache[key] = isBigEndian
+    ? (r << 24) | (g << 16) | (b << 8) | a
+    : (a << 24) | (b << 16) | (g << 8) | r
+  return cache[key]
+})({})
 
-// for little-endian
-export const toABGR = (r, g, b, a) => (a << 24) | (b << 16) | (g << 8) | r
+export const uint32ToRGBA = (cache => n => {
+  if (n in cache) return cache[n]
+  const isBigEndian = false // @todo: endianness detection
+  let a, b, g, r
+  if (isBigEndian) {
+    r = (n >> 24) & 0xff
+    g = (n >> 16) & 0xff
+    b = (n >> 8) & 0xff
+    a = n & 0xff
+  } else {
+    a = (n >> 24) & 0xff
+    b = (n >> 16) & 0xff
+    g = (n >> 8) & 0xff
+    r = n & 0xff
+  }
+  cache[n] = [r, g, b, a]
+  return cache[n]
+})({})
+
+export const uint32IsTransparent = (cache => n => {
+  if (n in cache) return cache[n]
+  cache[n] = uint32ToRGBA(n)[3] === 0
+  return cache[n]
+})({})
+
+export const uint32IsOpaque = (cache => n => {
+  if (n in cache) return cache[n]
+  cache[n] = uint32ToRGBA(n)[3] === 255
+  return cache[n]
+})({})
+
+export const compositeUint32 = (cache => (_a, _b) => {
+  const key = `${_a}|${_b}`
+  if (key in cache) return cache[key]
+  const a = uint32ToRGBA(_a)
+  const aa = a[3] / 255
+  if (aa === 1) cache[key] = _a
+  else if (aa === 0) cache[key] = _b
+  else {
+    const b = uint32ToRGBA(_b)
+    const ab = b[3] / 255
+    const c = [a[0], a[1], a[2], aa + ab * (1 - aa)]
+    const ac = c[3] / 255
+    for (var i = 0; i <= 2; i++) {
+      c[i] = Math.round((a[i] * aa + b[i] * ab * (1 - aa)) / ac) / 255
+    }
+    c[3] *= 255
+    // convert r, g, b, a to uint32
+    const val = rgbaToUint32(...c)
+    cache[key] = val
+  }
+  return cache[key]
+})({})
 
 export const toUint32 = (cache => x => {
   if (x in cache) return cache[x]
@@ -286,7 +283,7 @@ export const toUint32 = (cache => x => {
   if (Number.isInteger(x)) val = x
   else if ('string' === typeof x && x[0] === '#') val = fromHex(x)
   else if ('string' === typeof x && x.substring(0, 3) === 'rgb')
-    val = fromRGBA(x)
+    val = rgbaStringToUint32(x)
   if (val === null) throw new Error(`Unsupported format: ${x}`)
   cache[x] = modulo(val, Math.pow(2, 32))
   return cache[x]
@@ -316,7 +313,6 @@ export const toImageData = img => {
 
 export const loadImageData = async path => toImageData(await loadImage(path))
 
-import wrap from 'word-wrapper'
 const measureChar = charWidth => (text, start, end, width) => {
   const available = Math.floor(width / charWidth)
   const total = Math.floor((end - start) * charWidth)
@@ -385,13 +381,12 @@ export const clickToCoords = (e, scale, maxWidth, maxHeight) => {
 }
 
 export default {
-  Timer,
   drawRect,
   drawUint32,
   chord,
   calcBorderRadiusSkips,
   fromHex,
-  fromRGBA,
+  rgbaStringToUint32,
   toUint32,
   createContext,
   loadImage,
