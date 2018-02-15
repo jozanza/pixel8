@@ -54,19 +54,48 @@ export const requestInterval = (f, delay) => {
 export const clearTimer = ({ value }) => cancelAnimationFrame(value)
 
 export const draw = {
-  rect({ screen, hitmap, sw, sh, x, y, w, h, fill, radius, blend }) {
+  rect({
+    screen,
+    hitmap,
+    pw,
+    ph,
+    px,
+    py,
+    sw,
+    sh,
+    x,
+    y,
+    w,
+    h,
+    fill,
+    radius,
+    blend,
+    repeat,
+    stageRepeat,
+    absolute,
+  }) {
     // skip totally transparent fills
     // @todo - skip fills where only the alpha channel is 0
     if (uint32IsTransparent(fill)) return
     // calculate coordinates to skip due to border-radius
-    // secret bonus: also useful for drawing circles
+    // secret bonus: also useful for drawing circles ( ͡° ͜ʖ ͡°)
     const skips = calcBorderRadiusSkips(w, h, radius)
+    // console.log(repeat)
     for (let row = 0; row < h; row++) {
-      const _y = row + y
+      let _y = row + y
+      if (absolute) _y += py
+      if (repeat) _y = mod(mod(_y, ph) - py, ph) + py
+      if (stageRepeat) _y = mod(_y, sh)
+      // if (repeat) _y = mod(mod(_y, ph) - py, ph) + py
       if (_y < 0 || _y >= sh) continue // off-screen
       for (let col = 0; col < w; col++) {
-        const _x = col + x
+        let _x = col + x
+        if (absolute) _x += px
+        // if (repeat) _x = mod(mod(mod(_x, pw) - px, pw) + px, sw)
+        if (repeat) _x = mod(mod(_x, pw) - px, pw) + px
+        if (stageRepeat) _x = mod(_x, sw)
         if (_x < 0 || _x >= sw) continue // off-screen
+        // if (clip) continue // detect clip via parent id + hitmap? use a Set?
         // skip border-radius coords
         if (skips[row]) {
           const s = skips[row]
@@ -206,6 +235,13 @@ export const rgbaStringToUint32 = (cache => rgba => {
   return cache[rgba]
 })({})
 
+export const mod = (cache => (a, b) => {
+  const key = `${[a, b]}`
+  if (key in cache) return cache[key]
+  cache[key] = (a % b + b) % b
+  return cache[key]
+})({})
+
 export const modulo = (cache => (a, b) => {
   const key = `${[a, b]}`
   if (key in cache) return cache[key]
@@ -285,7 +321,7 @@ export const toUint32 = (cache => x => {
   else if ('string' === typeof x && x.substring(0, 3) === 'rgb')
     val = rgbaStringToUint32(x)
   if (val === null) throw new Error(`Unsupported format: ${x}`)
-  cache[x] = modulo(val, Math.pow(2, 32))
+  cache[x] = mod(val, Math.pow(2, 32))
   return cache[x]
 })({})
 
@@ -381,6 +417,7 @@ export const clickToCoords = (e, scale, maxWidth, maxHeight) => {
 }
 
 export default {
+  draw,
   drawRect,
   drawUint32,
   chord,

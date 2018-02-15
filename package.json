@@ -25,7 +25,7 @@
     "prebuild": "rm -rf lib && rm -rf main",
     "prepare": "npm -s run build",
     "test": "npx jest",
-    "start": "npm -s run styleguide",
+    "start": "parcel index.html",
     "styleguide": "npx styleguidist server",
     "styleguide:build": "npx styleguidist build"
   },

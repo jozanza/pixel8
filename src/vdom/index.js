@@ -4,7 +4,7 @@ import {
   ImageData,
   toUint32,
   draw,
-  Timer,
+  mod,
 } from '../utils'
 import * as easingUtils from 'easing-utils'
 
@@ -280,13 +280,19 @@ export class VDOMElement {
    * @param {Object} child - child to map props of
    */
   mapChildProps(childProps, child) {
-    if (childProps.position === 'fixed') return childProps
     const props = this.parent.mapChildProps(this.props, this)
-    return {
-      ...childProps,
-      x: props.x + childProps.x,
-      y: props.y + childProps.y,
-    }
+    return props
+    // let { x, y } = childProps
+    // if (childProps.position !== 'fixed') {
+    //   x = props.x + childProps.x
+    //   y = props.y + childProps.y
+    // }
+    // // console.log(childProps.x, x)
+    // return {
+    //   ...childProps,
+    //   x,
+    //   y,
+    // }
   }
   /**
    * Appends a child element and sets its parent prop
@@ -307,6 +313,41 @@ export class VDOMElement {
     child.destroy()
     return this
   }
+  get width() {
+    return this.props.width || 0
+  }
+  get height() {
+    return this.props.height || 0
+  }
+  get x() {
+    const { x: px, width: pw, overflow: poverflow } = this.parent
+    const { x, position, overflow, id } = this.props
+    const absolute = position !== 'fixed'
+    const repeat = poverflow === 'repeat' || overflow === 'repeat'
+    let _x = x || 0
+    if (absolute) _x += px
+    if (repeat) _x = mod(mod(_x, pw) - px, pw) + px
+    // if (id) console.log(id, 'x', x, '->', _x)
+    return _x
+  }
+  get y() {
+    const { y: py, height: ph, overflow: poverflow } = this.parent
+    const { y, position, overflow, id } = this.props
+    const absolute = position !== 'fixed'
+    const repeat = poverflow === 'repeat' || overflow === 'repeat'
+    let _y = y || 0
+    if (absolute) _y += py
+    if (repeat) _y = mod(mod(_y, ph) - py, ph) + py
+    // if (id) console.log(id, 'y', y, '->', _y)
+    return _y
+  }
+  get overflow() {
+    return this.props.overflow
+    // inherit overflow="repeat"
+    return this.parent && this.parent.overflow === 'repeat'
+      ? 'repeat'
+      : this.props.overflow || 'visible'
+  }
 }
 
 /** Virtual DOM element representing the root of the UI */
@@ -314,6 +355,18 @@ export class Stage extends VDOMElement {
   type = 'stage'
   mapChildProps(childProps) {
     return childProps
+  }
+  get width() {
+    return this.props.width || 0
+  }
+  get height() {
+    return this.props.height || 0
+  }
+  get x() {
+    return 0
+  }
+  get y() {
+    return 0
   }
 }
 
@@ -325,6 +378,12 @@ export class Rect extends VDOMElement {
 /** Virtual DOM element representing a circle */
 export class Circ extends VDOMElement {
   type = 'circ'
+  get width() {
+    return this.props.radius * 2
+  }
+  get height() {
+    return this.props.radius * 2
+  }
 }
 
 /** Virtual DOM element representing a pixel */
@@ -444,6 +503,15 @@ export class Transition extends VDOMElement {
     // console.log(nextProps.x, nextProps.y)
     return this.parent.mapChildProps(nextProps, child)
   }
+  get overflow() {
+    return this.parent.overflow
+  }
+  get width() {
+    return this.parent.width
+  }
+  get height() {
+    return this.parent.height
+  }
 }
 
 /** Virtual DOM element representing a callback function */
@@ -460,6 +528,15 @@ export class Callback extends VDOMElement {
   mapChildProps(childProps, child) {
     return this.parent.mapChildProps(childProps, child)
   }
+  get overflow() {
+    return this.parent.overflow
+  }
+  get width() {
+    return this.parent.width
+  }
+  get height() {
+    return this.parent.height
+  }
 }
 
 /** Virtual DOM element representing a list of virual DOM elements */
@@ -467,6 +544,15 @@ export class List extends VDOMElement {
   type = 'list'
   mapChildProps(childProps, child) {
     return this.parent.mapChildProps(childProps, child)
+  }
+  get overflow() {
+    return this.parent.overflow
+  }
+  get width() {
+    return this.parent.width
+  }
+  get height() {
+    return this.parent.height
   }
 }
 
@@ -489,6 +575,7 @@ export class Nothing extends VDOMElement {
  * @param {HTMLCanvasElement} [canvas]
  */
 export const render = (view, canvas, ctx = {}) => {
+  if (ctx.cancelled) return ctx
   if (canvas) autoCancelRender(canvas, ctx)
   ctx.next = ctx.next || requestTimeout
   ctx.cancel = ctx.cancel || clearTimer
@@ -511,13 +598,23 @@ export const render = (view, canvas, ctx = {}) => {
   updateScreenAndHitmap(ctx)
   if (canvas) {
     // if canvas element specified, write imageData to it
-    canvas.width = width
-    canvas.height = height
-    canvas.style.imageRendering = 'pixelated'
-    canvas.style.transform = `scale(${scale})`
-    canvas.style.transformOrigin = '0 0'
-    canvas.style.background = background
-    canvas.getContext('2d').putImageData(ctx.screen, 0, 0)
+    const ctx2d = canvas.getContext('2d')
+    const s = parseInt(scale)
+    const w = parseInt(width)
+    const h = parseInt(height)
+    const sw = w * s
+    const sh = h * s
+    canvas.width = sw
+    canvas.height = sh
+    ctx2d.imageSmoothingEnabled = false
+    // put image data 1:1 scale
+    ctx2d.putImageData(ctx.screen, 0, 0)
+    // scale up/down to specified value
+    if (s !== 1) {
+      // alternatively, we could use css scaling
+      // and imageRendering: pixelated
+      ctx2d.drawImage(canvas, 0, 0, w, h, 0, 0, sw, sh)
+    }
   }
   // repeat :)
   ctx.timer = ctx.next(() => render(view, canvas, ctx), 1 / fps * 1000)
@@ -533,15 +630,13 @@ export const render = (view, canvas, ctx = {}) => {
 export const autoCancelRender = (() => {
   const elems = new WeakMap()
   return (canvas, ctx) => {
-    if (elems.has(canvas) && ctx.frame === void 0) {
-      // call the cancel callback
-      const cancel = elems.get(canvas)
-      cancel()
-    } else {
-      // update the cancel callback
-      const cancel = () => ctx.cancel(ctx.timer)
-      elems.set(canvas, cancel)
+    const oldCtx = elems.get(canvas)
+    if (oldCtx && ctx !== elems.get(canvas)) {
+      oldCtx.cancelled = true
+      if (oldCtx.done) oldCtx.done()
     }
+    elems.set(canvas, ctx)
+    return oldCtx && oldCtx.cancelled
   }
 })()
 
@@ -569,6 +664,12 @@ export const updateScreenAndHitmap = ctx => {
     hitmap: new Uint32Array(ctx.hitmap.data.buffer),
     rootElement: ctx.rootElement,
     element: ctx.rootElement,
+    offset: {
+      x: 0,
+      y: 0,
+      width,
+      height,
+    },
   })
 }
 
@@ -579,39 +680,71 @@ export const updateScreenAndHitmap = ctx => {
  * @param {VDOMElement} rootElement - the root VDOMElement
  * @param {VDOMElement} element - the VDOMElement to be drawn
  */
-export const drawElement = ({ screen, hitmap, rootElement, element }) => {
+export const drawElement = ({
+  screen,
+  hitmap,
+  rootElement,
+  element,
+  offset,
+}) => {
   const { width, height } = rootElement.props
-  const { type, children, parent } = element
-  // compute final child props by applying parent mapping functions
-  const props =
-    element.parent && element.parent.mapChildProps
-      ? element.parent.mapChildProps(element.props, element)
-      : element.props
+  const { type, children, parent, props } = element
+  const fixedPosition = props.position && props.position === 'fixed'
+  const nextOffset = fixedPosition
+    ? {
+        x: props.x,
+        y: props.y,
+        width: props.width || width,
+        height: props.height || height,
+      }
+    : offset
   switch (type) {
     case 'stage':
       // clear screen
       screen.fill(toUint32(props.background))
       // clear hitmap
-      // hitmap.fill(0)
+      hitmap.fill(0)
       break
     case 'rect':
+      // console.log(
+      //   parent.width,
+      //   parent.height,
+      //   parent.x,
+      //   parent.y,
+      //   parent.overflow === 'repeat',
+      //   props.position !== 'fixed',
+      // )
       draw.rect({
         screen,
         hitmap,
+        pw: parent.width,
+        ph: parent.height,
+        px: parent.x,
+        py: parent.y,
         sw: width,
         sh: height,
-        x: props.x,
-        y: props.y,
         w: props.width || 0,
         h: props.height || 0,
+        x: props.x,
+        y: props.y,
         fill: toUint32(props.fill),
         radius: props.br || 0,
+        repeat: parent.overflow === 'repeat', // | 'hidden' | 'visible'
+        stageRepeat: rootElement.props.overflow === 'repeat', // | 'hidden'
+        absolute: props.position !== 'fixed', // | 'absolute'
+        blend: props.blend,
       })
       break
     case 'circ':
+      // console.log(parent, parent.width, parent.height)
       draw.rect({
+        repeat: parent.overflow === 'repeat', // 'hidden' | 'visible'
         screen,
         hitmap,
+        pw: parent.width,
+        ph: parent.height,
+        px: parent.x || 0,
+        py: parent.y || 0,
         sw: width,
         sh: height,
         x: props.x - 1,
@@ -624,6 +757,7 @@ export const drawElement = ({ screen, hitmap, rootElement, element }) => {
       break
     case 'pixel':
       draw.rect({
+        repeat: parent.overflow === 'repeat', // 'hidden' | 'visible'
         screen,
         hitmap,
         sw: width,
@@ -645,6 +779,7 @@ export const drawElement = ({ screen, hitmap, rootElement, element }) => {
       hitmap,
       rootElement,
       element: child,
+      offset: nextOffset,
     })
   }
 }
