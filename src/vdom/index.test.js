@@ -24,5 +24,5 @@ it('should render rectangles and circles and pixels', () => {
     null,
     ctx,
   )
-  expect(toPngBuffer(ctx.imageData)).toMatchImageSnapshot()
+  expect(toPngBuffer(ctx.screen)).toMatchImageSnapshot()
 })

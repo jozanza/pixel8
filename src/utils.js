@@ -57,22 +57,22 @@ export const draw = {
   rect({
     screen,
     hitmap,
-    pw,
-    ph,
     px,
     py,
+    pw,
+    ph,
+    parentRepeat,
     sw,
     sh,
+    stageRepeat,
     x,
     y,
     w,
     h,
-    fill,
     radius,
+    fill,
+    fixed,
     blend,
-    repeat,
-    stageRepeat,
-    absolute,
   }) {
     // skip totally transparent fills
     // @todo - skip fills where only the alpha channel is 0
@@ -83,16 +83,19 @@ export const draw = {
     // console.log(repeat)
     for (let row = 0; row < h; row++) {
       let _y = row + y
-      if (absolute) _y += py
-      if (repeat) _y = mod(mod(_y, ph) - py, ph) + py
+      if (!fixed) {
+        _y += py
+        if (parentRepeat) _y = mod(mod(_y, ph) - py, ph) + py
+      }
       if (stageRepeat) _y = mod(_y, sh)
       // if (repeat) _y = mod(mod(_y, ph) - py, ph) + py
       if (_y < 0 || _y >= sh) continue // off-screen
       for (let col = 0; col < w; col++) {
         let _x = col + x
-        if (absolute) _x += px
-        // if (repeat) _x = mod(mod(mod(_x, pw) - px, pw) + px, sw)
-        if (repeat) _x = mod(mod(_x, pw) - px, pw) + px
+        if (!fixed) {
+          _x += px
+          if (parentRepeat) _x = mod(mod(_x, pw) - px, pw) + px
+        }
         if (stageRepeat) _x = mod(_x, sw)
         if (_x < 0 || _x >= sw) continue // off-screen
         // if (clip) continue // detect clip via parent id + hitmap? use a Set?
@@ -196,6 +199,31 @@ export const calcBorderRadiusSkips = (cache => (w, h, br) => {
   cache[key] = skips
   return cache[key]
 })({})
+
+type BoundingRect = {
+  x: number,
+  y: number,
+  w: number,
+  h: number,
+  repeat: boolean, // repeat child overflow
+  // hide: hide child overflow
+  // fixed: boolean, // ignore parent relativity
+}
+// overflow: visible | repeat | hidden
+// position: absolute | fixed
+
+export const calcBoundingRect = (elem, parent) => {
+  if (elem.fixed) return elem // @todo - don't call if elem is fixed
+  let x = elem.x || 0
+  let y = elem.y || 0
+  x += parent.x
+  y += parent.y
+  if (parent.repeat) {
+    x = mod(mod(x, parent.w) - parent.x, parent.w) + parent.x
+    y = mod(mod(y, parent.h) - parent.y, parent.h) + parent.y
+  }
+  return { ...elem, x, y }
+}
 
 export const fromHex = (cache => hex => {
   if (hex in cache) return cache[hex]

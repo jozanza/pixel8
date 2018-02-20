@@ -5,86 +5,109 @@ render(({ frame }) => {
   return (
     <stage
       overflow="repeat"
-      fps={60}
+      fps={10}
       width={8}
       height={8}
       scale={20}
       background="#000"
     >
-      <rect
-        id="a"
-        x={-0}
-        y={-0}
-        width={4}
-        height={4}
-        fill="#f0f"
-        overflow="repeat"
-      >
+      <rect id="a" overflow="" x={2} y={2} width={4} height={4} fill="#f0f">
         <rect
           id="b"
-          x={-5}
-          y={-3}
+          overflow="repeat"
+          x={-1}
+          y={-1}
           width={3}
           height={3}
           fill="#fff"
-          overflow="repeat"
         >
-          <rect id="c" x={1} y={1} width={1} height={1} fill="#00f" />
+          {({ frame }) => [
+            <circ
+              key="c"
+              position="fixed"
+              x={frame / 8}
+              y={0}
+              radius={2}
+              fill="#00f"
+            />,
+            <rect
+              key="e"
+              position="fixed"
+              x={0}
+              y={0}
+              width={1}
+              height={1}
+              fill="#f0f"
+            />,
+            <transition
+              key="d"
+              values={[{ prop: 'x', duration: 16, ease: 'linear' }]}
+            >
+              <rect
+                position="fixed"
+                x={frame % 32 < 16 ? 3 : 7}
+                y={0}
+                width={1}
+                height={1}
+                fill="#0ff"
+              />
+            </transition>,
+          ]}
         </rect>
       </rect>
     </stage>
   )
 }, document.getElementById('root0'))
 
-render(({ frame }) => {
-  return (
-    <stage fps={0.1} width={8} height={8} scale={20} background="#000">
-      <rect
-        id="a"
-        x={-0}
-        y={-0}
-        width={4}
-        height={4}
-        fill="#f0f"
-        overflow="repeat"
-      >
-        <rect id="c" x={-1} y={-1} width={1} height={1} fill="#00f" />
-      </rect>
-    </stage>
-  )
-}, document.getElementById('root1'))
+// render(({ frame }) => {
+//   return (
+//     <stage overflow="repeat" fps={0.1} width={8} height={8} scale={20} background="#000">
+//       <rect
+//         id="a"
+//         x={-1}
+//         y={-0}
+//         width={4}
+//         height={4}
+//         fill="#f0f"
+//         overflow="repeat"
+//       >
+//         <rect id="c" x={-1} y={-1} width={1} height={1} fill="#00f" />
+//       </rect>
+//     </stage>
+//   )
+// }, document.getElementById('root1'))
 
-render(({ frame }) => {
-  return (
-    <stage fps={0.1} width={8} height={8} scale={20} background="#000">
-      <rect
-        id="a"
-        x={-0}
-        y={-0}
-        width={4}
-        height={4}
-        fill="#f0f"
-        overflow="repeat"
-      />
-    </stage>
-  )
-}, document.getElementById('root2'))
+// render(({ frame }) => {
+//   return (
+//     <stage fps={0.1} width={8} height={8} scale={20} background="#000">
+//       <rect
+//         id="a"
+//         x={-0}
+//         y={-0}
+//         width={4}
+//         height={4}
+//         fill="#f0f"
+//         overflow="repeat"
+//       />
+//     </stage>
+//   )
+// }, document.getElementById('root2'))
 
-render(({ frame }) => {
-  return (
-    <stage fps={0.1} width={8} height={8} scale={20} background="#000">
-      <rect
-        id="a"
-        x={-0}
-        y={-0}
-        width={4}
-        height={4}
-        fill="#f0f"
-        overflow="repeat"
-      />
-    </stage>
-  )
-}, document.getElementById('root3'))
+// render(({ frame }) => {
+//   return (
+//     <stage fps={0.1} width={8} height={8} scale={20} background="#000">
+//       <rect
+//         id="a"
+//         x={-0}
+//         y={-0}
+//         width={4}
+//         height={4}
+//         fill="#f0f"
+//         overflow="repeat"
+//       />
+//     </stage>
+//   )
+// }, document.getElementById('root3'))
 
 // const { draw, toUint32 } = utils
 // const screenData = new ImageData(8, 8)

@@ -5,6 +5,7 @@ import {
   toUint32,
   draw,
   mod,
+  calcBoundingRect,
 } from '../utils'
 import * as easingUtils from 'easing-utils'
 
@@ -63,7 +64,11 @@ export const mapChildNode = (child, key) => {
     : Array.isArray(child)
       ? list(props, child)
       : 'function' === typeof child
-        ? { type: 'callback', props: { key, render: child }, children: [] }
+        ? {
+            type: 'callback',
+            props: key ? { key, render: child } : { render: child },
+            children: [],
+          }
         : { ...child, props: { ...child.props, ...props } }
 }
 
@@ -106,7 +111,6 @@ export const nothing = props => ({ type: 'nothing', props, children: [] })
  * @return {VDOMElement}
  */
 export const createElement = ({ type, props, children }) => {
-  // console.log(type, props, children)
   switch (type) {
     case 'stage':
       return new Stage(props, children)
@@ -154,8 +158,8 @@ const updateElement = (parent, element, node, nextNode) => {
   if (node && node.type === nextNode.type) {
     // update props & state
     element.setProps(nextNode.props)
-    if (parent && typeof parent.childSetProps === 'function') {
-      parent.childSetProps(element)
+    if (parent && typeof parent.onChildSetProps === 'function') {
+      parent.onChildSetProps(element)
     }
     // element.update()
     if (element.type === 'callback') {
@@ -275,26 +279,6 @@ export class VDOMElement {
     }
   }
   /**
-   * Maps over child props to apply relative positioning, etc
-   * @param {Object} childProps - the props object being mapped
-   * @param {Object} child - child to map props of
-   */
-  mapChildProps(childProps, child) {
-    const props = this.parent.mapChildProps(this.props, this)
-    return props
-    // let { x, y } = childProps
-    // if (childProps.position !== 'fixed') {
-    //   x = props.x + childProps.x
-    //   y = props.y + childProps.y
-    // }
-    // // console.log(childProps.x, x)
-    // return {
-    //   ...childProps,
-    //   x,
-    //   y,
-    // }
-  }
-  /**
    * Appends a child element and sets its parent prop
    * @param {VDOMElement} child - child virtual DOM element
    */
@@ -313,61 +297,26 @@ export class VDOMElement {
     child.destroy()
     return this
   }
-  get width() {
-    return this.props.width || 0
-  }
-  get height() {
-    return this.props.height || 0
-  }
-  get x() {
-    const { x: px, width: pw, overflow: poverflow } = this.parent
-    const { x, position, overflow, id } = this.props
-    const absolute = position !== 'fixed'
-    const repeat = poverflow === 'repeat' || overflow === 'repeat'
-    let _x = x || 0
-    if (absolute) _x += px
-    if (repeat) _x = mod(mod(_x, pw) - px, pw) + px
-    // if (id) console.log(id, 'x', x, '->', _x)
-    return _x
-  }
-  get y() {
-    const { y: py, height: ph, overflow: poverflow } = this.parent
-    const { y, position, overflow, id } = this.props
-    const absolute = position !== 'fixed'
-    const repeat = poverflow === 'repeat' || overflow === 'repeat'
-    let _y = y || 0
-    if (absolute) _y += py
-    if (repeat) _y = mod(mod(_y, ph) - py, ph) + py
-    // if (id) console.log(id, 'y', y, '->', _y)
-    return _y
-  }
-  get overflow() {
-    return this.props.overflow
-    // inherit overflow="repeat"
-    return this.parent && this.parent.overflow === 'repeat'
-      ? 'repeat'
-      : this.props.overflow || 'visible'
+  /**
+   * Gets the element's bounding rectangle
+   * @return {BoundingRect | void}
+   */
+  getBoundingRect() {
+    const { x, y, width, height, position, overflow } = this.props
+    return {
+      x: parseInt(x || 0, 10),
+      y: parseInt(y || 0, 10),
+      w: parseInt(width || 0, 10),
+      h: parseInt(height || 0, 10),
+      repeat: overflow === 'repeat',
+      fixed: position === 'fixed',
+    }
   }
 }
 
 /** Virtual DOM element representing the root of the UI */
 export class Stage extends VDOMElement {
   type = 'stage'
-  mapChildProps(childProps) {
-    return childProps
-  }
-  get width() {
-    return this.props.width || 0
-  }
-  get height() {
-    return this.props.height || 0
-  }
-  get x() {
-    return 0
-  }
-  get y() {
-    return 0
-  }
 }
 
 /** Virtual DOM element representing a rectangle */
@@ -378,24 +327,41 @@ export class Rect extends VDOMElement {
 /** Virtual DOM element representing a circle */
 export class Circ extends VDOMElement {
   type = 'circ'
-  get width() {
-    return this.props.radius * 2
-  }
-  get height() {
-    return this.props.radius * 2
+  getBoundingRect() {
+    const { x, y, radius, position, overflow } = this.props
+    const n = parseInt(radius * 2)
+    return {
+      x: parseInt(x || 0, 10),
+      y: parseInt(y || 0, 10),
+      w: n,
+      h: n,
+      repeat: overflow === 'repeat',
+      fixed: position === 'fixed',
+    }
   }
 }
 
 /** Virtual DOM element representing a pixel */
 export class Pixel extends VDOMElement {
   type = 'pixel'
+  getBoundingRect() {
+    const { x, y, position, overflow } = this.props
+    return {
+      x: parseInt(x || 0, 10),
+      y: parseInt(y || 0, 10),
+      w: 1,
+      h: 1,
+      repeat: overflow === 'repeat',
+      fixed: position === 'fixed',
+    }
+  }
 }
 
 /** Virtual DOM element representing a transition */
 export class Transition extends VDOMElement {
   type = 'transition'
   transitions = new WeakMap()
-  nextProps = new WeakMap()
+  nextChildProps = new WeakMap()
   childCallbackQueue = new WeakMap()
   getTransitionValue(
     child,
@@ -420,7 +386,7 @@ export class Transition extends VDOMElement {
   update() {
     const { values } = this.props
     for (const child of this.children) {
-      const nextProps = {}
+      const nextChildProps = {}
       const { props } = child
       for (const value of values) {
         // @note
@@ -429,11 +395,11 @@ export class Transition extends VDOMElement {
         // object props are tricky...probably need an 'equals' function
         // to detect when the from/to values are actually different
         this.updateChildTransitionKeys(child, value)
-        nextProps[value.prop] = this.getTransitionValue(child, value)
+        nextChildProps[value.prop] = this.getTransitionValue(child, value)
         // console.log(transitions[key])
         // console.log(this.getTransitionValue(child, key))
       }
-      this.nextProps.set(child, nextProps)
+      this.nextChildProps.set(child, nextChildProps)
     }
   }
   updateChildTransitionKeys(child, { prop, duration, delay }) {
@@ -461,7 +427,7 @@ export class Transition extends VDOMElement {
         // decrement wait by one, floor is 0
         wait: wait > 0 ? (sameTarget ? wait - 1 : delay) : 0,
         // if nextValue has changed, change "from" to current transition value
-        from: sameTarget ? from : this.nextProps.get(child)[prop],
+        from: sameTarget ? from : this.nextChildProps.get(child)[prop],
         // we should always transition to nextValue
         to: nextValue,
       }
@@ -486,7 +452,7 @@ export class Transition extends VDOMElement {
       }
     }
   }
-  childSetProps(child) {
+  onChildSetProps(child) {
     const queue = this.childCallbackQueue.get(child) || []
     // transition callback queue...
     for (const { name, args } of queue) {
@@ -495,23 +461,7 @@ export class Transition extends VDOMElement {
     }
     this.childCallbackQueue.set(child, [])
   }
-  mapChildProps(props, child) {
-    const nextProps = {
-      ...props,
-      ...this.nextProps.get(child),
-    }
-    // console.log(nextProps.x, nextProps.y)
-    return this.parent.mapChildProps(nextProps, child)
-  }
-  get overflow() {
-    return this.parent.overflow
-  }
-  get width() {
-    return this.parent.width
-  }
-  get height() {
-    return this.parent.height
-  }
+  getBoundingRect() {}
 }
 
 /** Virtual DOM element representing a callback function */
@@ -523,42 +473,22 @@ export class Callback extends VDOMElement {
   update() {
     this.lastNode = this.node
     this.node = this.props.render(this.ctx)
+    if (Array.isArray(this.node)) this.node = list({}, this.node)
     this.ctx.frame++
   }
-  mapChildProps(childProps, child) {
-    return this.parent.mapChildProps(childProps, child)
-  }
-  get overflow() {
-    return this.parent.overflow
-  }
-  get width() {
-    return this.parent.width
-  }
-  get height() {
-    return this.parent.height
-  }
+  getBoundingRect() {}
 }
 
 /** Virtual DOM element representing a list of virual DOM elements */
 export class List extends VDOMElement {
   type = 'list'
-  mapChildProps(childProps, child) {
-    return this.parent.mapChildProps(childProps, child)
-  }
-  get overflow() {
-    return this.parent.overflow
-  }
-  get width() {
-    return this.parent.width
-  }
-  get height() {
-    return this.parent.height
-  }
+  getBoundingRect() {}
 }
 
 /** Virtual DOM element representing a nothing */
 export class Nothing extends VDOMElement {
   type = 'nothing'
+  getBoundingRect() {}
 }
 
 /**
@@ -648,7 +578,7 @@ export const autoCancelRender = (() => {
  * @param {VDOMElement} rootElement - the element to draw
  */
 export const updateScreenAndHitmap = ctx => {
-  const { width, height } = ctx.rootElement.props
+  const { width, height, overflow } = ctx.rootElement.props
   const noData = !ctx.screen
   const widthChanged = ctx.screen && ctx.screen.width !== width
   const heightChanged = ctx.screen && ctx.screen.height !== height
@@ -662,14 +592,8 @@ export const updateScreenAndHitmap = ctx => {
   drawElement({
     screen: new Uint32Array(ctx.screen.data.buffer),
     hitmap: new Uint32Array(ctx.hitmap.data.buffer),
-    rootElement: ctx.rootElement,
     element: ctx.rootElement,
-    offset: {
-      x: 0,
-      y: 0,
-      width,
-      height,
-    },
+    bounds: Array(2).fill(ctx.rootElement.getBoundingRect()),
   })
 }
 
@@ -677,27 +601,18 @@ export const updateScreenAndHitmap = ctx => {
  * Writes virtual DOM element pixels onto screen/hitmap buffers
  * @param {Uint32Array} screen - screen buffer view
  * @param {Uint32Array} hitmap - hitmap buffer view
- * @param {VDOMElement} rootElement - the root VDOMElement
  * @param {VDOMElement} element - the VDOMElement to be drawn
  */
-export const drawElement = ({
-  screen,
-  hitmap,
-  rootElement,
-  element,
-  offset,
-}) => {
-  const { width, height } = rootElement.props
-  const { type, children, parent, props } = element
-  const fixedPosition = props.position && props.position === 'fixed'
-  const nextOffset = fixedPosition
-    ? {
-        x: props.x,
-        y: props.y,
-        width: props.width || width,
-        height: props.height || height,
-      }
-    : offset
+export const drawElement = ({ screen, hitmap, element, bounds }) => {
+  const { type, children, parent } = element
+  const props =
+    parent && parent.nextChildProps
+      ? { ...element.props, ...parent.nextChildProps.get(element) }
+      : element.props
+  const [p, s] = bounds
+  const e = element.getBoundingRect() || p
+  const parentBoundingRect = calcBoundingRect(calcBoundingRect(e, p), s)
+  const nextBounds = [parentBoundingRect, s]
   switch (type) {
     case 'stage':
       // clear screen
@@ -706,68 +621,69 @@ export const drawElement = ({
       hitmap.fill(0)
       break
     case 'rect':
-      // console.log(
-      //   parent.width,
-      //   parent.height,
-      //   parent.x,
-      //   parent.y,
-      //   parent.overflow === 'repeat',
-      //   props.position !== 'fixed',
-      // )
       draw.rect({
         screen,
         hitmap,
-        pw: parent.width,
-        ph: parent.height,
-        px: parent.x,
-        py: parent.y,
-        sw: width,
-        sh: height,
-        w: props.width || 0,
-        h: props.height || 0,
-        x: props.x,
-        y: props.y,
+        px: parseInt(p.x, 10),
+        py: parseInt(p.y, 10),
+        pw: parseInt(p.w, 10),
+        ph: parseInt(p.h, 10),
+        parentRepeat: p.repeat,
+        sw: parseInt(s.w, 10),
+        sh: parseInt(s.h, 10),
+        stageRepeat: s.repeat,
+        w: parseInt(props.width || 0, 10),
+        h: parseInt(props.height || 0, 10),
+        x: parseInt(props.x || 0, 10),
+        y: parseInt(props.y || 0, 10),
+        radius: parseInt(props.br || 0, 10),
         fill: toUint32(props.fill),
-        radius: props.br || 0,
-        repeat: parent.overflow === 'repeat', // | 'hidden' | 'visible'
-        stageRepeat: rootElement.props.overflow === 'repeat', // | 'hidden'
-        absolute: props.position !== 'fixed', // | 'absolute'
+        fixed: props.position === 'fixed',
         blend: props.blend,
       })
       break
     case 'circ':
-      // console.log(parent, parent.width, parent.height)
       draw.rect({
-        repeat: parent.overflow === 'repeat', // 'hidden' | 'visible'
         screen,
         hitmap,
-        pw: parent.width,
-        ph: parent.height,
-        px: parent.x || 0,
-        py: parent.y || 0,
-        sw: width,
-        sh: height,
-        x: props.x - 1,
-        y: props.y - 1,
+        px: parseInt(p.x, 10),
+        py: parseInt(p.y, 10),
+        pw: parseInt(p.w, 10),
+        ph: parseInt(p.h, 10),
+        parentRepeat: p.repeat,
+        sw: parseInt(s.w, 10),
+        sh: parseInt(s.h, 10),
+        stageRepeat: s.repeat,
+        x: parseInt(props.x - 1, 10),
+        y: parseInt(props.y - 1, 10),
         w: Math.round(((props.radius || 0) + 1) * 2),
         h: Math.round(((props.radius || 0) + 1) * 2),
-        fill: toUint32(props.fill),
         radius: Math.round((props.radius || 0) + 2),
+        fill: toUint32(props.fill),
+        fixed: props.position === 'fixed',
+        blend: props.blend,
       })
       break
     case 'pixel':
       draw.rect({
-        repeat: parent.overflow === 'repeat', // 'hidden' | 'visible'
         screen,
         hitmap,
-        sw: width,
-        sh: height,
-        x: props.x,
-        y: props.y,
+        px: parseInt(p.x, 10),
+        py: parseInt(p.y, 10),
+        pw: parseInt(p.w, 10),
+        ph: parseInt(p.h, 10),
+        parentRepeat: p.repeat,
+        sw: parseInt(s.w, 10),
+        sh: parseInt(s.h, 10),
+        stageRepeat: s.repeat,
         w: 1,
         h: 1,
+        x: parseInt(props.x || 0, 10),
+        y: parseInt(props.y || 0, 10),
+        radius: parseInt(props.br || 0, 10),
         fill: toUint32(props.color),
-        radius: 0,
+        fixed: props.position === 'fixed',
+        blend: props.blend,
       })
       break
     default:
@@ -777,9 +693,8 @@ export const drawElement = ({
     drawElement({
       screen,
       hitmap,
-      rootElement,
       element: child,
-      offset: nextOffset,
+      bounds: nextBounds,
     })
   }
 }

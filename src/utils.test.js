@@ -1,4 +1,4 @@
-import { clickToCoords, stringToLines } from './utils'
+import { calcBoundingRect, clickToCoords, mod, stringToLines } from './utils'
 import wrap from 'word-wrapper'
 
 const measureChar = charWidth => (text, start, end, width) => {
