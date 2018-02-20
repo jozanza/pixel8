@@ -17,7 +17,7 @@ it('stringToLines', () => {
     width: 35,
     measure: measureChar(5),
   })
-  // console.log(actual)
+  console.log(actual)
 })
 
 describe('clickToCoords', () => {

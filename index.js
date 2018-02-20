@@ -1,5 +1,13 @@
 import { createElement, drawElement, h, render, utils } from './src/index'
+import layout from 'layout-bmfont-text'
+import pixel8Regular from './fonts/pixel8-regular-7.json'
+import pixel8Mono from './fonts/pixel8-mono-7.json'
+import pixel8FontUrl from './fonts/pixel8.png'
 // @jsx h
+
+// console.log(utils, pixel8FontUrl, pixel8Font)
+
+// console.log(txt)
 
 render(({ frame }) => {
   return (
@@ -8,7 +16,7 @@ render(({ frame }) => {
       fps={10}
       width={8}
       height={8}
-      scale={20}
+      scale={16 * 3}
       background="#000"
     >
       <rect id="a" overflow="" x={2} y={2} width={4} height={4} fill="#f0f">
@@ -59,23 +67,89 @@ render(({ frame }) => {
   )
 }, document.getElementById('root0'))
 
-// render(({ frame }) => {
-//   return (
-//     <stage overflow="repeat" fps={0.1} width={8} height={8} scale={20} background="#000">
-//       <rect
-//         id="a"
-//         x={-1}
-//         y={-0}
-//         width={4}
-//         height={4}
-//         fill="#f0f"
-//         overflow="repeat"
-//       >
-//         <rect id="c" x={-1} y={-1} width={1} height={1} fill="#00f" />
-//       </rect>
-//     </stage>
-//   )
-// }, document.getElementById('root1'))
+const drawText = (canvas, text, image) => {
+  const ctx = canvas.getContext('2d')
+  // ctx.globalAlpha = 1
+  console.log(text)
+  text.glyphs.forEach(glyph => {
+    const { data, position, line } = glyph
+    const [x, y] = position
+    //some characters like space/tab might be empty
+    //FireFox will error out if we try clipping with 0x0 rects
+    if (data.width * data.height === 0) return
+    //draw the sprite from texture atlas
+    ctx.drawImage(
+      image,
+      data.x,
+      data.y,
+      data.width,
+      data.height,
+      (8 + x + data.xoffset) * 3,
+      (8 + y + data.yoffset + (text._height - text._lineHeight)) * 3,
+      data.width * 3,
+      data.height * 3,
+    )
+  })
+}
+
+utils
+  .loadImage(pixel8FontUrl)
+  .catch(console.error)
+  .then(image => {
+    const txt = layout({
+      font: pixel8Regular,
+      align: 'left',
+      mode: 'pre',
+      letterSpacing: 0,
+      text:
+`
+Pixel8 <textbox> API:
+---------------------
+propTypes = {
+  children: string,
+  width: number,
+  height: number,
+  padding: number,
+  align: "left" | "right" | "center",
+  whitespace: "default" | "pre" | "nowrap",
+  letterSpacing: number,
+  lineHeight: number,
+  scrollTop: number,
+  start: number,
+  end: number,
+}
+`,//.toUpperCase(),
+        // 'Pixel8 Text API:\n----------\n<text /> candy = \n\t\tcanes liquorice ice cream topping cheesecake biscuit fruitcake. Tiramisu sesame snaps chocolate bar ice cream candy. Cake croissant liquorice. Biscuit fruitcake sweet roll fruitcake pastry. Dessert biscuit macaroon muffin tart liquorice marzipan tootsie roll. Biscuit croissant carrot cake bonbon marzipan jujubes gummi bears cake. Souffle pastry candy canes. Muffin chocolate lollipop cotton candy carrot cake chocolate bar candy. Jelly beans chupa chups bear claw jelly beans fruitcake tiramisu.',
+      width: 256 - 8,
+      height: 128 - 8,
+    })
+    // console.log(image)
+    render(({ frame }) => {
+      return (
+        <stage
+          overflow="repeat"
+          fps={0}
+          width={256}
+          height={128}
+          scale={3}
+          background="#000"
+        >
+          {/* <rect
+            id="a"
+            x={-1}
+            y={-0}
+            width={4}
+            height={4}
+            fill="#f0f"
+            overflow="repeat"
+          >
+            <rect id="c" x={-1} y={-1} width={1} height={1} fill="#00f" />
+          </rect> */}
+        </stage>
+      )
+    }, document.getElementById('root1'))
+    drawText(document.getElementById('root1'), txt, image)
+  })
 
 // render(({ frame }) => {
 //   return (
