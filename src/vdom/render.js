@@ -259,15 +259,13 @@ export const drawElement = ({ screen, hitmap, element, bounds }) => {
       const { textLayout, font } = element
       if (!textLayout) break
       const { scrollTop = 0, start = 0, end = Infinity } = props
-      // const lineHeight = props.lineHeight || textLayout.lineHeight
       const { glyphs, lineHeight } = textLayout
-      // console.log(textLayout)
-      // console.log(element.textLayout, element.font)
-      // console.log(font)
-      // console.log(e, p)
       let n = 0
       for (const g of glyphs) {
-        if (start > n) continue
+        if (start > n) {
+          n++
+          continue
+        }
         if (end < n) break
         const d = g.data
         const [x, y] = g.position
@@ -280,8 +278,6 @@ export const drawElement = ({ screen, hitmap, element, bounds }) => {
           d.width,
           d.height,
         )
-        // console.log(d.char, d.x, d.y, d.width, d.height, pixels)
-        // console.log(lineHeight + x + d.xoffset)
         drawUint32({
           screen,
           hitmap,

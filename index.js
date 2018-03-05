@@ -284,6 +284,9 @@ const heartTile2 = ({ x, y, size }) => (
 Pixel8 <textbox> propTypes:
 ---------------------------
 children: string
+font: string
+x: number
+y: number
 width: number
 height: number
 padding: number
