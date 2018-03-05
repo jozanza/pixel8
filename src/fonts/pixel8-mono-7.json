@@ -1,7 +1,7 @@
 {
-  "pages": ["pixel8.png"],
+  "pages": ["data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAEAAAABACAYAAACqaXHeAAAETUlEQVR4nO1a23LrIAwUmf7/L/u8GLIsK3EJTk5a70zHDdYNAZIAm/1xJDOz4zhW+Y8sYyOyzCtkm5lZSk+xD1IsnycDe4npkJZpDGR4cvL/WUAS7zy9y3j0ScyO5xTBZzIzS88eH5k2dxbe4SzLfI0aa0e8OOGU1egnu6ahHJDoWToJHSrGgHMKzemEdNRr64j4esgywY4tMwId4BqSjc3PbAcbA51OYtagnpX1jQ7mwYjsV8uuFpr75wjB0ZTTLhtl9dKwgMdzgqJfDYSufFx+y1kgdxA6vws7skDIu8UB3wx0wA+9Q8+pIBVFX2+qM5QOT4ZHZ+LdqP4K7ABPOedkpmE65vV4PCOZLnKMstPT34ALoYg4MpwLGCUvyvMYqWfSGvJzilZFVCP3YSaLkhn0Ir3RkzubTDtmZtYxbZQiK105CHopAxlYwey6ZKM9PVGbJ69HWy0LzIORA34jmjogx4C/0Hkz0c8oDfbavRTYe6fkjaZTRRctze6SxCCIa6MKVrnex82dPYMPK43e4XtVA3Dg9AKc16Z+Fzkq2JcYgCUtEmJbECyjmiFRu1c7VDYJ2p4ub7QbOlUJ4hYWt6qFYaDzCDWSyKMw2vGI1/vNNtWE0N+ZGOC1R8bOzAAzf3Sjtm5Kf8dmKKrxP45oM7RNx0VytyPXAapW5rLVHJqZdsw4nl7Uzb+VXI/Oo233Ag5UHa3gBbuGDoKp4sffI+mvRydpORfybnAlGHiBp6HDg83SWB9wRsj2jQwI02Ydjf/5UDQcweDdaCca+fmcdZB3JBM1dHCI29gZLQFez8WLjiGqInxlRo3kfq+qrOw5h13KvCoNdnHGg7frzbozhm6GrsBC56MZtTrbZBCMUhO3XdXupTNV/WG7khdC3QxtLWL4GkttyTgxWB3IVuyJYkOF6SXQuaQ0I6VwjcWXKBykGjly/0q8Air9uZh2QLB23W2vuC9UPJWak37WvCwz+l2h5wAvJY0WP2aTI2ImY0Fk20v4WBpcANYj2KYORSL+6kTkqt3gFfCKL+/dCL/cDf4p4LF45IQVB42s9VmdI3XJiO6CoS9ELgBuZWfAgZhlTsPLAiMHCqpa86rJw8z/gsyRpeyI/ldlA9vWQDkAR4fLUJVj+ZBBjqywTspy2nqjm0zs9fGdJ0dlAU8hpxqs5LrGdr4K25HTZ2qTiul/qQNGcjnSLsesd5wKr2CmQ9sC9lvOA1JK5e/E9imXZc9+7IGFkBu9rY6kS9ngOEHy8em1ddvhkz38VBe/T0abKqhD0aHIP9MGF6xRHmfe4S13ls2nziK2NTp79wJqJ8htSOcBswXyRPwqqu/ccpeXM1mgF31fis67AAeuMrPcX4pOngpzAPpV3uo54JWrrK9Adwbw8vhty6WpA8SHUAo8C752eTTfCTqpioHOkWnpW6C+FZ4dxVcuMD6Oh1mznS0dcQJedGFx48aNGzdufBH+AQYDoWtb4o1sAAAAAElFTkSuQmCC"],
   "info": {
-    "face": "Pixel8 Regular",
+    "face": "Pixel8 Mono",
     "size": 7,
     "bold": 0,
     "italic": 0,
@@ -26,24 +26,13 @@
     "greenChnl": 0,
     "blueChnl": 0
   },
-  "kernings": [
-    {
-      "first": 115,
-      "second": 115,
-      "amount": -1
-    },
-    {
-      "first": 122,
-      "second": 122,
-      "amount": -1
-    }
-  ],
+  "kernings": [],
   "chars": [
     {
       "page": 0,
       "chnl": 0,
-      "xadvance": 3,
-      "xoffset": 0,
+      "xadvance": 7,
+      "xoffset":0,
       "yoffset": 6,
       "x": 1,
       "y": 7,
@@ -55,8 +44,8 @@
     {
       "page": 0,
       "chnl": 0,
-      "xadvance": 3,
-      "xoffset": 0,
+      "xadvance": 7,
+      "xoffset":0,
       "yoffset": 6,
       "x": 1,
       "y": 7,
@@ -68,8 +57,8 @@
     {
       "page": 0,
       "chnl": 0,
-      "xadvance": 2,
-      "xoffset": 0,
+      "xadvance": 7,
+      "xoffset":0,
       "yoffset": 1,
       "x": 2,
       "y": 2,
@@ -81,8 +70,8 @@
     {
       "page": 0,
       "chnl": 0,
-      "xadvance": 4,
-      "xoffset": 0,
+      "xadvance": 7,
+      "xoffset":0,
       "yoffset": 1,
       "x": 4,
       "y": 2,
@@ -94,7 +83,7 @@
     {
       "page": 0,
       "chnl": 0,
-      "xadvance": 5,
+      "xadvance": 7,
       "xoffset": 0,
       "yoffset": 1,
       "x": 8,
@@ -107,7 +96,7 @@
     {
       "page": 0,
       "chnl": 0,
-      "xadvance": 6,
+      "xadvance": 7,
       "xoffset": 0,
       "yoffset": 0,
       "x": 13,
@@ -120,7 +109,7 @@
     {
       "page": 0,
       "chnl": 0,
-      "xadvance": 6,
+      "xadvance": 7,
       "xoffset": 0,
       "yoffset": 1,
       "x": 18,
@@ -133,7 +122,7 @@
     {
       "page": 0,
       "chnl": 0,
-      "xadvance": 5,
+      "xadvance": 7,
       "xoffset": 0,
       "yoffset": 1,
       "x": 26,
@@ -146,8 +135,8 @@
     {
       "page": 0,
       "chnl": 0,
-      "xadvance": 2,
-      "xoffset": 0,
+      "xadvance": 7,
+      "xoffset":0,
       "yoffset": 1,
       "x": 32,
       "y": 2,
@@ -159,8 +148,8 @@
     {
       "page": 0,
       "chnl": 0,
-      "xadvance": 3,
-      "xoffset": 0,
+      "xadvance": 7,
+      "xoffset":0,
       "yoffset": 0,
       "x": 34,
       "y": 1,
@@ -172,8 +161,8 @@
     {
       "page": 0,
       "chnl": 0,
-      "xadvance": 3,
-      "xoffset": 0,
+      "xadvance": 7,
+      "xoffset":0,
       "yoffset": 0,
       "x": 38,
       "y": 1,
@@ -185,7 +174,7 @@
     {
       "page": 0,
       "chnl": 0,
-      "xadvance": 6,
+      "xadvance": 7,
       "xoffset": 0,
       "yoffset": 2,
       "x": 42,
@@ -198,7 +187,7 @@
     {
       "page": 0,
       "chnl": 0,
-      "xadvance": 5,
+      "xadvance": 7,
       "xoffset": 0,
       "yoffset": 1,
       "x": 47,
@@ -211,8 +200,8 @@
     {
       "page": 0,
       "chnl": 0,
-      "xadvance": 2,
-      "xoffset": 0,
+      "xadvance": 7,
+      "xoffset":0,
       "yoffset": 5,
       "x": 53,
       "y": 6,
@@ -224,7 +213,7 @@
     {
       "page": 0,
       "chnl": 0,
-      "xadvance": 3,
+      "xadvance": 7,
       "xoffset": 1,
       "yoffset": 4,
       "x": 56,
@@ -237,8 +226,8 @@
     {
       "page": 0,
       "chnl": 0,
-      "xadvance": 2,
-      "xoffset": 0,
+      "xadvance": 7,
+      "xoffset":0,
       "yoffset": 5,
       "x": 59,
       "y": 6,
@@ -250,8 +239,8 @@
     {
       "page": 0,
       "chnl": 0,
-      "xadvance": 4,
-      "xoffset": 0,
+      "xadvance": 7,
+      "xoffset":0,
       "yoffset": 1,
       "x": 1,
       "y": 9,
@@ -263,7 +252,7 @@
     {
       "page": 0,
       "chnl": 0,
-      "xadvance": 5,
+      "xadvance": 7,
       "xoffset": 0,
       "yoffset": 1,
       "x": 5,
@@ -276,8 +265,8 @@
     {
       "page": 0,
       "chnl": 0,
-      "xadvance": 3,
-      "xoffset": 0,
+      "xadvance": 7,
+      "xoffset":0,
       "yoffset": 1,
       "x": 10,
       "y": 9,
@@ -289,7 +278,7 @@
     {
       "page": 0,
       "chnl": 0,
-      "xadvance": 5,
+      "xadvance": 7,
       "xoffset": 0,
       "yoffset": 1,
       "x": 14,
@@ -302,7 +291,7 @@
     {
       "page": 0,
       "chnl": 0,
-      "xadvance": 5,
+      "xadvance": 7,
       "xoffset": 0,
       "yoffset": 1,
       "x": 20,
@@ -315,7 +304,7 @@
     {
       "page": 0,
       "chnl": 0,
-      "xadvance": 5,
+      "xadvance": 7,
       "xoffset": 0,
       "yoffset": 1,
       "x": 25,
@@ -328,7 +317,7 @@
     {
       "page": 0,
       "chnl": 0,
-      "xadvance": 5,
+      "xadvance": 7,
       "xoffset": 0,
       "yoffset": 1,
       "x": 31,
@@ -341,7 +330,7 @@
     {
       "page": 0,
       "chnl": 0,
-      "xadvance": 5,
+      "xadvance": 7,
       "xoffset": 0,
       "yoffset": 1,
       "x": 36,
@@ -354,7 +343,7 @@
     {
       "page": 0,
       "chnl": 0,
-      "xadvance": 5,
+      "xadvance": 7,
       "xoffset": 0,
       "yoffset": 1,
       "x": 41,
@@ -367,7 +356,7 @@
     {
       "page": 0,
       "chnl": 0,
-      "xadvance": 5,
+      "xadvance": 7,
       "xoffset": 0,
       "yoffset": 1,
       "x": 47,
@@ -380,7 +369,7 @@
     {
       "page": 0,
       "chnl": 0,
-      "xadvance": 5,
+      "xadvance": 7,
       "xoffset": 0,
       "yoffset": 1,
       "x": 52,
@@ -393,8 +382,8 @@
     {
       "page": 0,
       "chnl": 0,
-      "xadvance": 2,
-      "xoffset": 0,
+      "xadvance": 7,
+      "xoffset":2,
       "yoffset": 3,
       "x": 57,
       "y": 11,
@@ -406,8 +395,8 @@
     {
       "page": 0,
       "chnl": 0,
-      "xadvance": 2,
-      "xoffset": 0,
+      "xadvance": 7,
+      "xoffset":0,
       "yoffset": 3,
       "x": 59,
       "y": 11,
@@ -419,8 +408,8 @@
     {
       "page": 0,
       "chnl": 0,
-      "xadvance": 4,
-      "xoffset": 0,
+      "xadvance": 7,
+      "xoffset":0,
       "yoffset": 1,
       "x": 1,
       "y": 16,
@@ -432,8 +421,8 @@
     {
       "page": 0,
       "chnl": 0,
-      "xadvance": 5,
-      "xoffset": 1,
+      "xadvance": 7,
+      "xoffset":0,
       "yoffset": 3,
       "x": 5,
       "y": 17,
@@ -445,8 +434,8 @@
     {
       "page": 0,
       "chnl": 0,
-      "xadvance": 4,
-      "xoffset": 0,
+      "xadvance": 7,
+      "xoffset": 2,
       "yoffset": 1,
       "x": 9,
       "y": 16,
@@ -458,7 +447,7 @@
     {
       "page": 0,
       "chnl": 0,
-      "xadvance": 5,
+      "xadvance": 7,
       "xoffset": 0,
       "yoffset": 1,
       "x": 13,
@@ -484,7 +473,7 @@
     {
       "page": 0,
       "chnl": 0,
-      "xadvance": 6,
+      "xadvance": 7,
       "xoffset": 0,
       "yoffset": 1,
       "x": 27,
@@ -497,7 +486,7 @@
     {
       "page": 0,
       "chnl": 0,
-      "xadvance": 5,
+      "xadvance": 7,
       "xoffset": 0,
       "yoffset": 1,
       "x": 33,
@@ -510,7 +499,7 @@
     {
       "page": 0,
       "chnl": 0,
-      "xadvance": 5,
+      "xadvance": 7,
       "xoffset": 0,
       "yoffset": 1,
       "x": 38,
@@ -523,7 +512,7 @@
     {
       "page": 0,
       "chnl": 0,
-      "xadvance": 5,
+      "xadvance": 7,
       "xoffset": 0,
       "yoffset": 1,
       "x": 43,
@@ -536,8 +525,8 @@
     {
       "page": 0,
       "chnl": 0,
-      "xadvance": 4,
-      "xoffset": 0,
+      "xadvance": 7,
+      "xoffset":0,
       "yoffset": 1,
       "x": 48,
       "y": 16,
@@ -549,8 +538,8 @@
     {
       "page": 0,
       "chnl": 0,
-      "xadvance": 4,
-      "xoffset": 0,
+      "xadvance": 7,
+      "xoffset":0,
       "yoffset": 1,
       "x": 52,
       "y": 16,
@@ -562,7 +551,7 @@
     {
       "page": 0,
       "chnl": 0,
-      "xadvance": 5,
+      "xadvance": 7,
       "xoffset": 0,
       "yoffset": 1,
       "x": 56,
@@ -575,7 +564,7 @@
     {
       "page": 0,
       "chnl": 0,
-      "xadvance": 5,
+      "xadvance": 7,
       "xoffset": 0,
       "yoffset": 1,
       "x": 1,
@@ -588,8 +577,8 @@
     {
       "page": 0,
       "chnl": 0,
-      "xadvance": 4,
-      "xoffset": 0,
+      "xadvance": 7,
+      "xoffset":0,
       "yoffset": 1,
       "x": 6,
       "y": 23,
@@ -601,7 +590,7 @@
     {
       "page": 0,
       "chnl": 0,
-      "xadvance": 5,
+      "xadvance": 7,
       "xoffset": 0,
       "yoffset": 1,
       "x": 10,
@@ -614,7 +603,7 @@
     {
       "page": 0,
       "chnl": 0,
-      "xadvance": 5,
+      "xadvance": 7,
       "xoffset": 0,
       "yoffset": 1,
       "x": 15,
@@ -627,8 +616,8 @@
     {
       "page": 0,
       "chnl": 0,
-      "xadvance": 4,
-      "xoffset": 0,
+      "xadvance": 7,
+      "xoffset":0,
       "yoffset": 1,
       "x": 21,
       "y": 23,
@@ -640,7 +629,7 @@
     {
       "page": 0,
       "chnl": 0,
-      "xadvance": 6,
+      "xadvance": 7,
       "xoffset": 0,
       "yoffset": 1,
       "x": 25,
@@ -653,7 +642,7 @@
     {
       "page": 0,
       "chnl": 0,
-      "xadvance": 5,
+      "xadvance": 7,
       "xoffset": 0,
       "yoffset": 1,
       "x": 31,
@@ -666,7 +655,7 @@
     {
       "page": 0,
       "chnl": 0,
-      "xadvance": 5,
+      "xadvance": 7,
       "xoffset": 0,
       "yoffset": 1,
       "x": 36,
@@ -679,7 +668,7 @@
     {
       "page": 0,
       "chnl": 0,
-      "xadvance": 5,
+      "xadvance": 7,
       "xoffset": 0,
       "yoffset": 1,
       "x": 41,
@@ -692,7 +681,7 @@
     {
       "page": 0,
       "chnl": 0,
-      "xadvance": 5,
+      "xadvance": 7,
       "xoffset": 0,
       "yoffset": 1,
       "x": 46,
@@ -705,7 +694,7 @@
     {
       "page": 0,
       "chnl": 0,
-      "xadvance": 6,
+      "xadvance": 7,
       "xoffset": 0,
       "yoffset": 1,
       "x": 51,
@@ -718,7 +707,7 @@
     {
       "page": 0,
       "chnl": 0,
-      "xadvance": 5,
+      "xadvance": 7,
       "xoffset": 0,
       "yoffset": 1,
       "x": 57,
@@ -731,7 +720,7 @@
     {
       "page": 0,
       "chnl": 0,
-      "xadvance": 4,
+      "xadvance": 7,
       "xoffset": -1,
       "yoffset": 1,
       "x": 1,
@@ -744,7 +733,7 @@
     {
       "page": 0,
       "chnl": 0,
-      "xadvance": 5,
+      "xadvance": 7,
       "xoffset": 0,
       "yoffset": 1,
       "x": 7,
@@ -757,7 +746,7 @@
     {
       "page": 0,
       "chnl": 0,
-      "xadvance": 5,
+      "xadvance": 7,
       "xoffset": 0,
       "yoffset": 1,
       "x": 12,
@@ -770,7 +759,7 @@
     {
       "page": 0,
       "chnl": 0,
-      "xadvance": 6,
+      "xadvance": 7,
       "xoffset": 0,
       "yoffset": 1,
       "x": 18,
@@ -783,7 +772,7 @@
     {
       "page": 0,
       "chnl": 0,
-      "xadvance": 6,
+      "xadvance": 7,
       "xoffset": 0,
       "yoffset": 1,
       "x": 24,
@@ -796,7 +785,7 @@
     {
       "page": 0,
       "chnl": 0,
-      "xadvance": 6,
+      "xadvance": 7,
       "xoffset": 0,
       "yoffset": 1,
       "x": 30,
@@ -809,7 +798,7 @@
     {
       "page": 0,
       "chnl": 0,
-      "xadvance": 5,
+      "xadvance": 7,
       "xoffset": 0,
       "yoffset": 1,
       "x": 36,
@@ -822,8 +811,8 @@
     {
       "page": 0,
       "chnl": 0,
-      "xadvance": 3,
-      "xoffset": 0,
+      "xadvance": 7,
+      "xoffset":0,
       "yoffset": 0,
       "x": 42,
       "y": 29,
@@ -835,8 +824,8 @@
     {
       "page": 0,
       "chnl": 0,
-      "xadvance": 3,
-      "xoffset": 0,
+      "xadvance": 7,
+      "xoffset":0,
       "yoffset": 1,
       "x": 45,
       "y": 30,
@@ -848,8 +837,8 @@
     {
       "page": 0,
       "chnl": 0,
-      "xadvance": 3,
-      "xoffset": 0,
+      "xadvance": 7,
+      "xoffset":0,
       "yoffset": 0,
       "x": 49,
       "y": 29,
@@ -861,7 +850,7 @@
     {
       "page": 0,
       "chnl": 0,
-      "xadvance": 5,
+      "xadvance": 7,
       "xoffset": 0,
       "yoffset": 1,
       "x": 52,
@@ -874,8 +863,8 @@
     {
       "page": 0,
       "chnl": 0,
-      "xadvance": 3,
-      "xoffset": 0,
+      "xadvance": 7,
+      "xoffset":0,
       "yoffset": 6,
       "x": 58,
       "y": 35,
@@ -887,8 +876,8 @@
     {
       "page": 0,
       "chnl": 0,
-      "xadvance": 3,
-      "xoffset": 0,
+      "xadvance": 7,
+      "xoffset":0,
       "yoffset": 0,
       "x": 1,
       "y": 37,
@@ -900,7 +889,7 @@
     {
       "page": 0,
       "chnl": 0,
-      "xadvance": 5,
+      "xadvance": 7,
       "xoffset": 0,
       "yoffset": 3,
       "x": 4,
@@ -913,7 +902,7 @@
     {
       "page": 0,
       "chnl": 0,
-      "xadvance": 5,
+      "xadvance": 7,
       "xoffset": 0,
       "yoffset": 1,
       "x": 9,
@@ -926,7 +915,7 @@
     {
       "page": 0,
       "chnl": 0,
-      "xadvance": 5,
+      "xadvance": 7,
       "xoffset": 0,
       "yoffset": 3,
       "x": 14,
@@ -939,7 +928,7 @@
     {
       "page": 0,
       "chnl": 0,
-      "xadvance": 5,
+      "xadvance": 7,
       "xoffset": 0,
       "yoffset": 1,
       "x": 19,
@@ -952,7 +941,7 @@
     {
       "page": 0,
       "chnl": 0,
-      "xadvance": 5,
+      "xadvance": 7,
       "xoffset": 0,
       "yoffset": 3,
       "x": 24,
@@ -965,8 +954,8 @@
     {
       "page": 0,
       "chnl": 0,
-      "xadvance": 3,
-      "xoffset": 0,
+      "xadvance": 7,
+      "xoffset":0,
       "yoffset": 1,
       "x": 29,
       "y": 38,
@@ -978,7 +967,7 @@
     {
       "page": 0,
       "chnl": 0,
-      "xadvance": 5,
+      "xadvance": 7,
       "xoffset": 0,
       "yoffset": 3,
       "x": 33,
@@ -991,7 +980,7 @@
     {
       "page": 0,
       "chnl": 0,
-      "xadvance": 5,
+      "xadvance": 7,
       "xoffset": 0,
       "yoffset": 1,
       "x": 38,
@@ -1004,8 +993,8 @@
     {
       "page": 0,
       "chnl": 0,
-      "xadvance": 2,
-      "xoffset": 0,
+      "xadvance": 7,
+      "xoffset":0,
       "yoffset": 1,
       "x": 43,
       "y": 38,
@@ -1017,8 +1006,8 @@
     {
       "page": 0,
       "chnl": 0,
-      "xadvance": 3,
-      "xoffset": 0,
+      "xadvance": 7,
+      "xoffset":0,
       "yoffset": 1,
       "x": 45,
       "y": 38,
@@ -1030,7 +1019,7 @@
     {
       "page": 0,
       "chnl": 0,
-      "xadvance": 4,
+      "xadvance": 7,
       "xoffset": 0,
       "yoffset": 1,
       "x": 48,
@@ -1043,8 +1032,8 @@
     {
       "page": 0,
       "chnl": 0,
-      "xadvance": 2,
-      "xoffset": 0,
+      "xadvance": 7,
+      "xoffset":0,
       "yoffset": 1,
       "x": 53,
       "y": 38,
@@ -1056,7 +1045,7 @@
     {
       "page": 0,
       "chnl": 0,
-      "xadvance": 6,
+      "xadvance": 7,
       "xoffset": 0,
       "yoffset": 3,
       "x": 55,
@@ -1069,7 +1058,7 @@
     {
       "page": 0,
       "chnl": 0,
-      "xadvance": 5,
+      "xadvance": 7,
       "xoffset": 0,
       "yoffset": 3,
       "x": 1,
@@ -1082,7 +1071,7 @@
     {
       "page": 0,
       "chnl": 0,
-      "xadvance": 5,
+      "xadvance": 7,
       "xoffset": 0,
       "yoffset": 3,
       "x": 6,
@@ -1095,8 +1084,8 @@
     {
       "page": 0,
       "chnl": 0,
-      "xadvance": 5,
-      "xoffset": 0,
+      "xadvance": 7,
+      "xoffset":0,
       "yoffset": 3,
       "x": 11,
       "y": 46,
@@ -1108,7 +1097,7 @@
     {
       "page": 0,
       "chnl": 0,
-      "xadvance": 5,
+      "xadvance": 7,
       "xoffset": 0,
       "yoffset": 3,
       "x": 16,
@@ -1121,8 +1110,8 @@
     {
       "page": 0,
       "chnl": 0,
-      "xadvance": 4,
-      "xoffset": 0,
+      "xadvance": 7,
+      "xoffset":0,
       "yoffset": 3,
       "x": 21,
       "y": 46,
@@ -1134,8 +1123,8 @@
     {
       "page": 0,
       "chnl": 0,
-      "xadvance": 4,
-      "xoffset": 0,
+      "xadvance": 7,
+      "xoffset":0,
       "yoffset": 2,
       "x": 25,
       "y": 45,
@@ -1147,8 +1136,8 @@
     {
       "page": 0,
       "chnl": 0,
-      "xadvance": 3,
-      "xoffset": 0,
+      "xadvance": 7,
+      "xoffset":0,
       "yoffset": 2,
       "x": 29,
       "y": 45,
@@ -1160,7 +1149,7 @@
     {
       "page": 0,
       "chnl": 0,
-      "xadvance": 5,
+      "xadvance": 7,
       "xoffset": 0,
       "yoffset": 3,
       "x": 32,
@@ -1173,7 +1162,7 @@
     {
       "page": 0,
       "chnl": 0,
-      "xadvance": 6,
+      "xadvance": 7,
       "xoffset": 0,
       "yoffset": 3,
       "x": 37,
@@ -1186,7 +1175,7 @@
     {
       "page": 0,
       "chnl": 0,
-      "xadvance": 6,
+      "xadvance": 7,
       "xoffset": 0,
       "yoffset": 3,
       "x": 43,
@@ -1199,8 +1188,8 @@
     {
       "page": 0,
       "chnl": 0,
-      "xadvance": 4,
-      "xoffset": 0,
+      "xadvance": 7,
+      "xoffset":0,
       "yoffset": 3,
       "x": 50,
       "y": 46,
@@ -1212,7 +1201,7 @@
     {
       "page": 0,
       "chnl": 0,
-      "xadvance": 6,
+      "xadvance": 7,
       "xoffset": 0,
       "yoffset": 3,
       "x": 55,
@@ -1225,7 +1214,7 @@
     {
       "page": 0,
       "chnl": 0,
-      "xadvance": 5,
+      "xadvance": 7,
       "xoffset": 0,
       "yoffset": 3,
       "x": 1,
@@ -1238,8 +1227,8 @@
     {
       "page": 0,
       "chnl": 0,
-      "xadvance": 3,
-      "xoffset": 0,
+      "xadvance": 7,
+      "xoffset":0,
       "yoffset": 1,
       "x": 6,
       "y": 51,
@@ -1251,8 +1240,8 @@
     {
       "page": 0,
       "chnl": 0,
-      "xadvance": 2,
-      "xoffset": 0,
+      "xadvance": 7,
+      "xoffset": 2,
       "yoffset": 0,
       "x": 10,
       "y": 51,
@@ -1264,8 +1253,8 @@
     {
       "page": 0,
       "chnl": 0,
-      "xadvance": 3,
-      "xoffset": 0,
+      "xadvance": 7,
+      "xoffset":0,
       "yoffset": 1,
       "x": 12,
       "y": 51,
@@ -1277,7 +1266,7 @@
     {
       "page": 0,
       "chnl": 0,
-      "xadvance": 5,
+      "xadvance": 7,
       "xoffset": 0,
       "yoffset": 3,
       "x": 16,

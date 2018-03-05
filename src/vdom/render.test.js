@@ -1,4 +1,5 @@
-import { h, render } from './index'
+import { h } from './nodes'
+import { render } from './render'
 // @jsx h
 
 it('should render rectangles and circles and pixels', () => {
@@ -24,5 +25,5 @@ it('should render rectangles and circles and pixels', () => {
     null,
     ctx,
   )
-  expect(toPngBuffer(ctx.screen)).toMatchImageSnapshot()
+  expectImageDataToMatchSnapshot(ctx.screen)
 })

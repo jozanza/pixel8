@@ -1,23 +1,65 @@
-import { calcBoundingRect, clickToCoords, mod, stringToLines } from './utils'
+import {
+  calcBoundingRect,
+  clickToCoords,
+  getSubPixels,
+  mod,
+  sprite,
+  palette,
+  stringToLines,
+} from './utils'
 import wrap from 'word-wrapper'
 
-const measureChar = charWidth => (text, start, end, width) => {
-  const available = Math.floor(width / charWidth)
-  const total = Math.floor((end - start) * charWidth)
-  const glyphs = Math.min(end - start, available, total)
-  return {
-    start,
-    end: start + glyphs,
-  }
-}
+it('sprite', () => {
+  const heart = sprite`
+  . . . . . . . .
+  . 1 1 . . 1 2 .
+  1 1 1 1 1 1 1 2
+  1 1 1 1 1 1 1 2
+  . 1 1 1 1 1 1 .
+  . . 1 1 1 1 . .
+  . . . 1 1 . . .
+  . . . . . . . .
+  `
+  const pixels = heart.palette({
+    '.': 'rgba(0, 0, 0, 0)',
+    '1': '#f00',
+    '2': '#f0f',
+  })
+  expect(pixels).toMatchSnapshot()
+})
+
+it('getSubPixels', () => {
+  // prettier-ignore
+  const pixels = new Uint32Array([
+    0, 0, 0, 0, 0, 0, 0, 0,
+    1, 1, 1, 1, 1, 1, 1, 1,
+    2, 2, 2, 2, 2, 2, 2, 2,
+    3, 3, 3, 3, 3, 3, 3, 3,
+    4, 4, 4, 4, 4, 4, 4, 4,
+    5, 5, 5, 5, 5, 5, 5, 5,
+    6, 6, 6, 6, 6, 6, 6, 6,
+    7, 7, 7, 7, 7, 7, 7, 7,
+  ])
+  const subpixels = getSubPixels(pixels, 8, 8, 0, 0, 4, 4)
+  expect(subpixels).toMatchSnapshot()
+})
 
 it('stringToLines', () => {
+  const measureChar = charWidth => (text, start, end, width) => {
+    const available = Math.floor(width / charWidth)
+    const total = Math.floor((end - start) * charWidth)
+    const glyphs = Math.min(end - start, available, total)
+    return {
+      start,
+      end: start + glyphs,
+    }
+  }
   const expected = 'jozanza rules'
   const actual = wrap.lines('jozanza rules', {
     width: 35,
     measure: measureChar(5),
   })
-  console.log(actual)
+  // console.log(actual)
 })
 
 describe('clickToCoords', () => {
