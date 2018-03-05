@@ -278,7 +278,7 @@ const heartTile2 = ({ x, y, size }) => (
               letterSpacing={0}
               lineHeight={1}
               start={0}
-              end={frame}
+              end={Infinity}
             >
               {`
 Pixel8 <textbox> propTypes:

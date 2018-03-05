@@ -339,6 +339,11 @@ export class Sprite extends VDOMElement {
 // Only valid child element is <text>
 export class Textbox extends VDOMElement {
   type = 'textbox'
+  constructor(...args) {
+    super(...args)
+    const [child] = [...this.children]
+    this.onChildSetProps(child)
+  }
   updateLayout(opts) {
     if (this.textLayout) this.textLayout.update(opts)
     else this.textLayout = layoutText(opts)
