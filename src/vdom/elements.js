@@ -305,6 +305,7 @@ export class Nothing extends VDOMElement {
 /** Virtual DOM element representing a sprite */
 export class Sprite extends VDOMElement {
   type = 'sprite'
+  currentSrc = null
   init() {
     const { onInit } = this.props
     this.setPixels()
@@ -312,8 +313,8 @@ export class Sprite extends VDOMElement {
     onInit()
   }
   update() {
-    const { onUpdate } = this.props
-    this.setPixels()
+    const { onUpdate, src } = this.props
+    if (this.currentSrc !== src) this.setPixels()
     if ('function' !== typeof onUpdate) return
     onUpdate()
   }
@@ -332,6 +333,7 @@ export class Sprite extends VDOMElement {
       // Anything else
       this.pixels = Uint32Array.from(src)
     }
+    this.currentSrc = src
   }
 }
 

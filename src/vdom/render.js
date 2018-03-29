@@ -257,7 +257,7 @@ export const drawElement = ({ screen, hitmap, element, bounds }) => {
       break
     case 'textbox':
       const { textLayout, font } = element
-      if (!textLayout) break
+      // if (!textLayout) break
       const { scrollTop = 0, start = 0, end = Infinity } = props
       const { glyphs, lineHeight } = textLayout
       let n = 0
