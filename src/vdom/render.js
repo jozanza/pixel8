@@ -136,8 +136,9 @@ export const updateScreenAndHitmap = ctx => {
  */
 export const drawElement = ({ screen, hitmap, element, bounds }) => {
   const { type, children, parent } = element
-  // skip all drawing / bounding rect calculations for callbacks
-  if ('callback' === type) {
+  // skip all drawing / bounding rect calculations for callbacks and lists
+  if ('nothing' === type || 'text' === type) return
+  if ('callback' === type || 'list' === type) {
     for (const child of children) {
       drawElement({
         screen,

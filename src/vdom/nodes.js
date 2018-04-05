@@ -23,7 +23,10 @@ type VNodeFn = (type: string, props: Object) => VNode
  */
 export const h = (type, props = {}, ...children) => {
   return typeof type === 'function'
-    ? type(props, children)
+    ? type({
+        ...props,
+        children: children.length === 1 ? children[0] : children,
+      })
     : {
         type,
         props,
@@ -92,7 +95,7 @@ const callback = (props, render) => ({
 export const list = (props, children) => {
   return {
     type: 'list',
-    props,
+    props: { key: props.key },
     children: children.map((child, i) => {
       const hasKey = child && child.props && child.props.hasOwnProperty('key')
       return hasKey ? mapChildNode(child) : mapChildNode(child, i)
